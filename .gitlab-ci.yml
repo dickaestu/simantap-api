@@ -4,7 +4,7 @@ stages:
 deploy:
     stage: deploy
     when: manual
-    image: alpine:3.12.3
+    image: alpine:3.12.1
     script:
         - apk add --no-cache rsync openssh
         - mkdir -p ~/.ssh

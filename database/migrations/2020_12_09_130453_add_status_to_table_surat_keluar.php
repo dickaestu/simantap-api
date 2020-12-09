@@ -26,7 +26,7 @@ class AddStatusToTableSuratKeluar extends Migration
     public function down()
     {
         Schema::table('surat_keluar', function (Blueprint $table) {
-            $table->string('status');
+            $table->dropColumn('status');
         });
     }
 }

@@ -17,6 +17,7 @@ class SuratMasuk extends Model
         'perihal',
         'keterangan',
         'file',
-        'status' 
+        'status',
+        'bagian_id'
     ];
 }

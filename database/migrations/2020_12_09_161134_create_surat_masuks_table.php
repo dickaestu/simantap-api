@@ -25,7 +25,7 @@ class CreateSuratMasuksTable extends Migration
             $table->text('keterangan')->nullable();
             $table->text('file');
             $table->string('status')->default('manager');
-            $table->bigInteger('bagian_is')->unsigned();
+            $table->bigInteger('bagian_id')->unsigned();
             $table->timestamps();
         });
     }

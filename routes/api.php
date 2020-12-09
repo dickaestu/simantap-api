@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 */
+Route::resource('/surat-masuk', 'SuratMasukController')->middleware('jwt.auth')->except('create', 'edit');
 
 /*
 |--------------------------------------------------------------------------

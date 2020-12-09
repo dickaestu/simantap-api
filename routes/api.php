@@ -14,12 +14,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:api')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
+/*
+|--------------------------------------------------------------------------
+| Auth Routes
+|--------------------------------------------------------------------------
+|
+*/
 
 Route::post('/register', 'UserController@store');
 Route::post('/surat-keluar/create', 'SuratKeluarController@store');
 Route::put('/surat-keluar/update/{id}', 'SuratKeluarController@update');
 Route::delete('/surat-keluar/delete/{id}', 'SuratKeluarController@destroy');
+Route::post('/login', 'AuthController@login');

@@ -73,7 +73,6 @@ class SuratMasukController extends Controller
                 'perihal' => $request->perihal,
                 'file' => $fileName,
                 'keterangan' => $request->keterangan,
-                'bagian_id' => $user->bagian_id
             ]);
 
             $response = [
@@ -150,7 +149,6 @@ class SuratMasukController extends Controller
                 'file' => $fileName ?? $message->file,
                 'perihal' => $request->perihal,
                 'keterangan' => $request->keterangan,
-                'bagian_id' => $user->bagian_id
             ]);
 
             $response = [

@@ -162,10 +162,9 @@ class SuratKeluarController extends Controller
      */
     public function destroy($id)
     {
-        $item = SuratKeluar::find($id);
-        File::delete('files/surat_keluar/' . $item > file);
-
+        $item = SuratKeluar::findOrFail($id);
         $item->delete();
+        File::delete('files/surat_keluar/' . $item->file);
         return response()->json([
             'status' => 'success',
             'message' => 'Data berhasil dihapus',

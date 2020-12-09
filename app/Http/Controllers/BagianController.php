@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 
-class UserController extends Controller
+class BagianController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -37,44 +34,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'username' => 'required|string|max:20|unique:users',
-            'password' => 'required|string|min:8',
-            'roles_id' => 'required',
-        ]);
-
-        $status = "error";
-        $message = "";
-        $data = null;
-        $code = 400;
-
-        if ($validator->fails()) {
-            $errors = $validator->errors();
-            $message = $errors;
-        } else {
-            $user = User::create([
-                'name' => $request->name,
-                'username' => $request->username,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'roles_id' => $request->roles_id,
-            ]);
-            if ($user) {
-                $status = "success";
-                $message = "register successfully";
-                $data = $user->toArray();
-                $code = 200;
-            } else {
-                $message = 'register failed';
-            }
-        }
-        return response()->json([
-            'status' => $status,
-            'message' => $message,
-            'data' => $data
-        ], $code);
+        //
     }
 
     /**

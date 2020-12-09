@@ -25,6 +25,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
+/*
+|--------------------------------------------------------------------------
+| Surat Keluar Routes
+|--------------------------------------------------------------------------
+|
+*/
+
+Route::post('/surat-keluar/create', 'SuratKeluarController@store');
+Route::put('/surat-keluar/update/{id}', 'SuratKeluarController@update');
+Route::delete('/surat-keluar/delete/{id}', 'SuratKeluarController@destroy');
+
 /*
 |--------------------------------------------------------------------------
 | Auth Routes
@@ -33,7 +45,4 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('/register', 'UserController@store');
-Route::post('/surat-keluar/create', 'SuratKeluarController@store');
-Route::put('/surat-keluar/update/{id}', 'SuratKeluarController@update');
-Route::delete('/surat-keluar/delete/{id}', 'SuratKeluarController@destroy');
 Route::post('/login', 'AuthController@login');

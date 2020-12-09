@@ -97,9 +97,46 @@ class SuratKeluarController extends Controller
     {
         $item = SuratKeluar::findOrFail($id);
 
+        $validator = Validator::make($request->all(), [
+            'no_surat' => 'required|string|max:50|unique:surat_keluar,no_surat,' . $item->id,
+            // 'tanggal_surat' => 'required|date',
+            // 'pengolah' => 'required|string|max:255',
+            // 'tujuan_surat' => 'required|string|max:255',
+            // 'perihal' => 'required|string|max:255',
+            // 'file' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
+            // 'keterangan' => 'nullable',
+        ]);
+
+        $status = "error";
+        $message = "";
+        $data = null;
+        $code = 400;
+
+        if ($validator->fails()) {
+            $errors = $validator->errors();
+            $message = $errors;
+        } else {
+            $data = $request->all();
+            // if ($request->files) {
+            //     $data['password'] = bcrypt($request->password);
+            // } else {
+            //     unset($data['password']);
+            // }
+            $surat_keluar = $item->update($data);
+            if ($surat_keluar) {
+                $status = "success";
+                $message = "Data berhasil diupdate";
+                $data = $surat_keluar;
+                $code = 200;
+            } else {
+                $message = 'Failed';
+            }
+        }
         return response()->json([
-            'message' => 'data berhasil diupdate'
-        ], 200);
+            'status' => $status,
+            'message' => $message,
+            'data' => $data
+        ], $code);
     }
 
     /**

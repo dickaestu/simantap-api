@@ -36,7 +36,7 @@ class SuratMasukController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'no_agenda' => 'required|string|max:50',
             'no_surat' => 'required|string|max:50|unique:surat_masuk',
             'tanggal_surat' => 'required|date',
@@ -48,22 +48,21 @@ class SuratMasukController extends Controller
             'keterangan' => 'nullable',
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             $response = [
                 'message' => 'Error Validation',
                 'errors'  => $validator->messages()
             ];
             $status = 422;
-
         } else {
             $user = JWTAuth::user();
-    
+
             $file = $request->file('file');
-    
+
             $fileName = now()->toDateString() . '_' . $file->getClientOriginalName();
-    
+
             $file->move('files/surat_masuk', $fileName);
-    
+
             SuratMasuk::create([
                 'no_agenda' => $request->no_agenda,
                 'no_surat' => $request->no_surat,
@@ -99,7 +98,7 @@ class SuratMasukController extends Controller
         return response()->json([
             'message' => 'fetched successfully',
             'data'    => $message
-        ],200);
+        ], 200);
     }
 
     /**
@@ -112,9 +111,9 @@ class SuratMasukController extends Controller
     public function update(Request $request, $id)
     {
         $message = SuratMasuk::FindOrFail($id);
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'no_agenda' => 'required|string|max:50',
-            'no_surat' => 'required|string|max:50|unique:surat_masuk,no_surat,'.$message->id,
+            'no_surat' => 'required|string|max:50|unique:surat_masuk,no_surat,' . $message->id,
             'tanggal_surat' => 'required|date',
             'tanggal_terima' => 'required|date',
             'sumber_surat' => 'required|string|max:255',
@@ -124,24 +123,23 @@ class SuratMasukController extends Controller
             'keterangan' => 'nullable',
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             $response = [
                 'message' => 'Error Validation',
                 'errors'  => $validator->messages()
             ];
             $status = 422;
-
         } else {
             $user = JWTAuth::user();
 
-            if($request->file){
+            if ($request->file) {
                 $file = $request->file('file');
-        
+
                 $fileName = now()->toDateString() . '_' . $file->getClientOriginalName();
                 File::delete('files/surat_masuk/' . $message->file);
                 $file->move('files/surat_masuk/', $fileName);
             }
-    
+
             $message->update([
                 'no_agenda' => $request->no_agenda,
                 'no_surat' => $request->no_surat,
@@ -173,10 +171,11 @@ class SuratMasukController extends Controller
     public function destroy($id)
     {
         $message = SuratMasuk::FindOrFail($id);
+        $message->delete();
         File::delete('files/surat_masuk/' . $message->file);
 
         return response()->json([
             'message' => 'deleted successfully'
-        ],200);
+        ], 200);
     }
 }

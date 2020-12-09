@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 */
+
 Route::resource('/surat-masuk', 'SuratMasukController')->middleware('jwt.auth')->except('create', 'edit');
 
 
@@ -34,9 +35,8 @@ Route::resource('/surat-masuk', 'SuratMasukController')->middleware('jwt.auth')-
 |
 */
 
-Route::post('/surat-keluar/create', 'SuratKeluarController@store');
-Route::put('/surat-keluar/update/{id}', 'SuratKeluarController@update');
-Route::delete('/surat-keluar/delete/{id}', 'SuratKeluarController@destroy');
+
+Route::resource('/surat-keluar', 'SuratKeluarController')->middleware('jwt.auth')->except('create', 'edit');
 
 /*
 |--------------------------------------------------------------------------

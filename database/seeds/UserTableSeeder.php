@@ -21,7 +21,6 @@ class UserTableSeeder extends Seeder
             User::create([
                 'name' => $faker->name,
                 'roles_id' => mt_rand(1, 3),
-                'bagian_id' => mt_rand(1, 5),
                 'email' => $faker->email,
                 'username' => $faker->userName,
                 'password' => Hash::make('1234567890')

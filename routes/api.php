@@ -20,6 +20,21 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
+| Disposisi Surat Masuk Routes
+|--------------------------------------------------------------------------
+|
+*/
+Route::group(['prefix' => '/surat-masuk', 'middleware' => 'jwt.auth'], function(){
+    Route::get('/disposisi', 'DisposisiSuratMasukController@index');
+    Route::post('{surat}/disposisi', 'DisposisiSuratMasukController@store');
+    Route::get('/disposisi/{disposisi}', 'DisposisiSuratMasukController@show');
+    Route::put('/disposisi/{disposisi}', 'DisposisiSuratMasukController@update');
+    Route::delete('/disposisi/{disposisi}', 'DisposisiSuratMasukController@destroy');
+
+});
+
+/*
+|--------------------------------------------------------------------------
 | Surat Masuk Routes
 |--------------------------------------------------------------------------
 |

@@ -19,4 +19,8 @@ class SuratMasuk extends Model
         'file',
         'status',
     ];
+
+    public function dispositions(){
+        return $this->morphOne('App\Models\Disposition', 'disposable');
+    }
 }

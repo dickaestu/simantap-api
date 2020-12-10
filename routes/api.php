@@ -24,13 +24,27 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 */
-Route::group(['prefix' => '/surat-masuk', 'middleware' => 'jwt.auth'], function(){
+
+Route::group(['prefix' => '/surat-masuk', 'middleware' => 'jwt.auth'], function () {
     Route::get('/disposisi', 'DisposisiSuratMasukController@index');
     Route::post('{surat}/disposisi', 'DisposisiSuratMasukController@store');
     Route::get('/disposisi/{disposisi}', 'DisposisiSuratMasukController@show');
     Route::put('/disposisi/{disposisi}', 'DisposisiSuratMasukController@update');
     Route::delete('/disposisi/{disposisi}', 'DisposisiSuratMasukController@destroy');
+});
 
+/*
+|--------------------------------------------------------------------------
+| Disposisi Surat KEluar Routes
+|--------------------------------------------------------------------------
+|
+*/
+Route::group(['prefix' => '/surat-keluar', 'middleware' => 'jwt.auth'], function () {
+    Route::get('/disposisi', 'DisposisiSuratKeluarController@index');
+    Route::post('{surat}/disposisi', 'DisposisiSuratKeluarController@store');
+    Route::get('/disposisi/{disposisi}', 'DisposisiSuratKeluarController@show');
+    Route::put('/disposisi/{disposisi}', 'DisposisiSuratKeluarController@update');
+    Route::delete('/disposisi/{disposisi}', 'DisposisiSuratKeluarController@destroy');
 });
 
 /*

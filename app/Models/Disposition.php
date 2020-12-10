@@ -13,7 +13,8 @@ class Disposition extends Model
         return $this->morphTo();
     }
 
-    public function sections(){
-        return $this->belongsToMany('App\Models\Bagian', 'tembusan', 'disposition_id', 'bagian_id');
+    public function sections()
+    {
+        return $this->belongsToMany('App\Models\Bagian', 'tembusan', 'disposition_id', 'bagian_id')->withTimestamps();
     }
 }

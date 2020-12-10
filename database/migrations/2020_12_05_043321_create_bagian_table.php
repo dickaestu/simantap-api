@@ -15,7 +15,7 @@ class CreateBagianTable extends Migration
     {
         Schema::create('bagian', function (Blueprint $table) {
             $table->id();
-            $table->enum('nama_bagian', ['karo', 'kasubag', 'paur', 'staf min', 'administrator']);
+            $table->string('nama_bagian');
             $table->timestamps();
         });
     }

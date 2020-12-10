@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Tymon\JWTAuth\Facades\JWTAuth;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
@@ -19,8 +17,7 @@ class SuratMasukController extends Controller
      */
     public function index()
     {
-        $user = JWTAuth::user();
-        $incomingMessages = SuratMasuk::where('bagian_id', $user->bagian_id)->orderBy('created_at', 'desc')->get();
+        $incomingMessages = SuratMasuk::orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'message' => 'fetched successfully',
@@ -55,11 +52,9 @@ class SuratMasukController extends Controller
             ];
             $status = 422;
         } else {
-            $user = JWTAuth::user();
-
             $file = $request->file('file');
 
-            $fileName = now()->toDateString() . '_' . $file->getClientOriginalName();
+            $fileName = time() . '_' . $file->getClientOriginalName();
 
             $file->move('files/surat_masuk', $fileName);
 
@@ -129,12 +124,10 @@ class SuratMasukController extends Controller
             ];
             $status = 422;
         } else {
-            $user = JWTAuth::user();
-
             if ($request->file) {
                 $file = $request->file('file');
 
-                $fileName = now()->toDateString() . '_' . $file->getClientOriginalName();
+                $fileName = time() . '_' . $file->getClientOriginalName();
                 File::delete('files/surat_masuk/' . $message->file);
                 $file->move('files/surat_masuk/', $fileName);
             }

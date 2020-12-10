@@ -34,11 +34,6 @@ class BagianTableSeeder extends Seeder
                     'created_at' => now(),
                     'updated_at' => now(),
                 ],
-                [
-                    'nama_bagian' => 'administrator',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
             ]
         );
     }

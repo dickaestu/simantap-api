@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bagian;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class BagianController extends Controller
 {
@@ -13,7 +15,12 @@ class BagianController extends Controller
      */
     public function index()
     {
-        //
+        $data = Bagian::orderBy('created_at', 'desc')->get();
+
+        return response()->json([
+            'status' => 'Success',
+            'data' => $data
+        ], 200);
     }
 
     /**
@@ -34,7 +41,36 @@ class BagianController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'nama_bagian' => 'required|string',
+        ]);
+
+        $status = "error";
+        $message = "";
+        $data = null;
+        $code = 400;
+
+        if ($validator->fails()) {
+            $errors = $validator->errors();
+            $message = $errors;
+        } else {
+            $bagian = Bagian::create([
+                'nama_bagian' => $request->nama_bagian,
+            ]);
+            if ($bagian) {
+                $status = "success";
+                $message = "Data berhasil dibuat";
+                $data = $bagian;
+                $code = 200;
+            } else {
+                $message = 'Failed';
+            }
+        }
+        return response()->json([
+            'status' => $status,
+            'message' => $message,
+            'data' => $data
+        ], $code);
     }
 
     /**
@@ -68,7 +104,39 @@ class BagianController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $item = Bagian::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'nama_bagian' => 'required|string',
+        ]);
+
+        $status = "error";
+        $message = "";
+        $data = null;
+        $code = 400;
+
+        if ($validator->fails()) {
+            $errors = $validator->errors();
+            $message = $errors;
+        } else {
+
+            $bagian = $item->update([
+                'nama_bagian' => $request->nama_bagian,
+            ]);
+            if ($bagian) {
+                $status = "success";
+                $message = "Data berhasil diupdate";
+                $data = $bagian;
+                $code = 200;
+            } else {
+                $message = 'Failed';
+            }
+        }
+        return response()->json([
+            'status' => $status,
+            'message' => $message,
+            'data' => $data
+        ], $code);
     }
 
     /**
@@ -79,6 +147,11 @@ class BagianController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $item = Bagian::findOrFail($id);
+        $item->delete();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data berhasil dihapus',
+        ], 200);
     }
 }

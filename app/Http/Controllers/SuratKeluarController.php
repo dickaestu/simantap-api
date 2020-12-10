@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratKeluar;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 
 class SuratKeluarController extends Controller
@@ -15,7 +16,13 @@ class SuratKeluarController extends Controller
      */
     public function index()
     {
-        //
+
+        $data = SuratKeluar::orderBy('created_at', 'desc')->get();
+
+        return response()->json([
+            'status' => 'Success',
+            'data' => $data
+        ], 200);
     }
 
     /**
@@ -57,8 +64,8 @@ class SuratKeluarController extends Controller
         } else {
             $file = $request->file('file');
 
-            $fileName = $file->getClientOriginalName();
-            $file->move('files\surat keluar', $fileName);
+            $fileName = now()->toDateString() . '_' . $file->getClientOriginalName();
+            $file->move('files/surat_keluar/', $fileName);
             $surat_keluar = SuratKeluar::create([
                 'no_surat' => $request->no_surat,
                 'tanggal_surat' => $request->tanggal_surat,
@@ -67,7 +74,6 @@ class SuratKeluarController extends Controller
                 'perihal' => $request->perihal,
                 'keterangan' => $request->keterangan,
                 'file' => $fileName,
-                'status' => 'Manager'
             ]);
             if ($surat_keluar) {
                 $status = "success";
@@ -97,9 +103,55 @@ class SuratKeluarController extends Controller
     {
         $item = SuratKeluar::findOrFail($id);
 
+        $validator = Validator::make($request->all(), [
+            'no_surat' => 'required|string|max:50|unique:surat_keluar,no_surat,' . $item->id,
+            'tanggal_surat' => 'required|date',
+            'pengolah' => 'required|string|max:255',
+            'tujuan_surat' => 'required|string|max:255',
+            'perihal' => 'required|string|max:255',
+            'file' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
+            'keterangan' => 'nullable',
+        ]);
+
+        $status = "error";
+        $message = "";
+        $data = null;
+        $code = 400;
+
+        if ($validator->fails()) {
+            $errors = $validator->errors();
+            $message = $errors;
+        } else {
+            if ($request->file) {
+                $file = $request->file('file');
+
+                $fileName = now()->toDateString() . '_' . $file->getClientOriginalName();
+                File::delete('files/surat_keluar/' . $item->file);
+                $file->move('files/surat_keluar/', $fileName);
+            }
+            $surat_keluar = $item->update([
+                'no_surat' => $request->no_surat,
+                'tanggal_surat' => $request->tanggal_surat,
+                'pengolah' => $request->pengolah,
+                'tujuan_surat' => $request->tujuan_surat,
+                'perihal' => $request->perihal,
+                'keterangan' => $request->keterangan,
+                'file' => $fileName ?? $item->file,
+            ]);
+            if ($surat_keluar) {
+                $status = "success";
+                $message = "Data berhasil diupdate";
+                $data = $surat_keluar;
+                $code = 200;
+            } else {
+                $message = 'Failed';
+            }
+        }
         return response()->json([
-            'message' => 'data berhasil diupdate'
-        ], 200);
+            'status' => $status,
+            'message' => $message,
+            'data' => $data
+        ], $code);
     }
 
     /**
@@ -110,19 +162,12 @@ class SuratKeluarController extends Controller
      */
     public function destroy($id)
     {
-        $item = SuratKeluar::find($id);
-
-        if ($item) {
-            $item->delete();
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Data berhasil dihapus',
-            ], 200);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Data tidak ditemukan',
-            ], 404);
-        }
+        $item = SuratKeluar::findOrFail($id);
+        $item->delete();
+        File::delete('files/surat_keluar/' . $item->file);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data berhasil dihapus',
+        ], 200);
     }
 }

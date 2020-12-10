@@ -11,4 +11,9 @@ class SuratKeluar extends Model
     protected $fillable = [
         'no_surat', 'tanggal_surat', 'pengolah', 'tujuan_surat', 'perihal', 'keterangan', 'path', 'status', 'file'
     ];
+
+    public function dispositions()
+    {
+        return $this->morphOne('App\Models\Disposition', 'disposable');
+    }
 }

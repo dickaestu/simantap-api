@@ -86,3 +86,4 @@ Route::resource('/bagian', 'BagianController')->middleware('jwt.auth')->except('
 
 Route::post('/register', 'UserController@store');
 Route::post('/login', 'AuthController@login');
+Route::post('/logout', 'AuthController@logout');

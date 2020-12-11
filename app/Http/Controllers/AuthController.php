@@ -15,20 +15,21 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $request){
+    public function login(Request $request)
+    {
         $request->validate([
             'username' => 'required',
             'password' => 'required',
         ]);
 
         $user = User::where('email', $request->username)->orWhere('username', $request->username)->first();
-        if(!$user){
+        if (!$user) {
             $response = [
                 'message' => 'Email or username not found.'
             ];
             $status   = 404;
         } else {
-            if(Hash::check($request->password, $user->password)){
+            if (Hash::check($request->password, $user->password)) {
                 $token = Auth::login($user);
 
                 $response = $this->respondWithToken($token, $user);
@@ -42,7 +43,6 @@ class AuthController extends Controller
         }
 
         return response()->json($response, $status);
-
     }
 
     /**

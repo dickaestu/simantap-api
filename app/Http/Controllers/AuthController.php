@@ -46,14 +46,14 @@ class AuthController extends Controller
         return response()->json($response, $status);
     }
 
-    public function logout(Request $request){
+    public function logout(Request $request)
+    {
 
         //Blacklist token from User login
         JWTAuth::invalidate(JWTAuth::parseToken());
         return response()->json([
             'message'   => 'Logout Successfully'
-        ],200);
-        
+        ], 200);
     }
 
     /**
@@ -67,7 +67,7 @@ class AuthController extends Controller
     {
         return response()->json([
             'user_data' => $user,
-            'role'  => $user->role()->select('id','role_name')->first(),
+            'role'  => $user->role()->select('role_name')->first(),
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60

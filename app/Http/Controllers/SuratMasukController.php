@@ -41,7 +41,7 @@ class SuratMasukController extends Controller
             'sumber_surat' => 'required|string|max:255',
             'tujuan_surat' => 'required|string|max:255',
             'perihal' => 'required|string|max:255',
-            'file' => 'required|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
+            'file.*' => 'required|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
             'keterangan' => 'nullable',
         ]);
 

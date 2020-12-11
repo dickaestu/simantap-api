@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -43,6 +44,16 @@ class AuthController extends Controller
         }
 
         return response()->json($response, $status);
+    }
+
+    public function logout(Request $request){
+
+        //Blacklist token from User login
+        JWTAuth::invalidate(JWTAuth::parseToken());
+        return response()->json([
+            'message'   => 'Logout Successfully'
+        ],200);
+        
     }
 
     /**

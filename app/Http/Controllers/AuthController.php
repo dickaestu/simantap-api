@@ -31,7 +31,7 @@ class AuthController extends Controller
             if(Hash::check($request->password, $user->password)){
                 $token = Auth::login($user);
 
-                $response = $this->respondWithToken($token);
+                $response = $this->respondWithToken($token, $user);
                 $status = 200;
             } else {
                 $response = [
@@ -52,9 +52,11 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function respondWithToken($token)
+    protected function respondWithToken($token, $user)
     {
         return response()->json([
+            'user_data' => $user,
+            'role'  => $user->role()->select('id','role_name')->first(),
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60

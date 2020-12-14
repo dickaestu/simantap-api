@@ -49,6 +49,7 @@ class DisposisiSuratKeluarController extends Controller
     public function store(Request $request, $suratId)
     {
         $validator = Validator::make($request->all(), [
+            'kepada'  => 'required|numeric',
             'catatan' => 'required',
         ]);
 
@@ -62,6 +63,7 @@ class DisposisiSuratKeluarController extends Controller
         } else {
             $outcomingMessage = SuratKeluar::FindOrFail($suratId);
             $disposition = $outcomingMessage->dispositions()->create([
+                'kepada'  => $request->kepada,
                 'catatan' => $request->catatan
             ]);
 
@@ -114,6 +116,7 @@ class DisposisiSuratKeluarController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
+            'kepada'  => 'required|numeric',
             'catatan' => 'required',
         ]);
 
@@ -127,6 +130,7 @@ class DisposisiSuratKeluarController extends Controller
         } else {
             $disposition = Disposition::FindOrFail($id);
             $disposition->update([
+                'kepada'  => $request->kepada,
                 'catatan' => $request->catatan
             ]);
 

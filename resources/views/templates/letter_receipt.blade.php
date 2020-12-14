@@ -11,72 +11,95 @@
         .center{
             margin: 5px auto;
         }
+
+        td, th {
+        border: 1px solid #2c2c2c;
+        text-align: left;
+        padding: 8px;
+        }
+
+        th {
+            width: 35%
+        }
+     
     </style>
 </head>
 <body>
     <div>
-        <img class="" src="files/kop_surat/kop-surat-dummy.jpg" height="100px" alt="">
+        <img class="" src="files/kop_surat/kop-surat-dummy.jpg"  width="100%" alt="Kop Surat">
     </div>
 
-    <hr>
+    {{-- <hr> --}}
 
     <div>
-        <h1 class="text-center">TANDA TERIMA SURAT</h1>
+        <h2 class="text-center">TANDA TERIMA SURAT</h2>
     </div>
 
-    <div>
-        <table class="center" border="1">
+
+        <table style="width: 100%;  border-collapse: collapse;"  >
             <tr>
-                <td>
+                <th>
                     Telah terima dari
-                </td>
+                </th>
                 <td>
                     {{$message->sumber_surat}}
                 </td>
             </tr>
             <tr>
-                <td>
+                <th>
                     Nomor Surat
-                </td>
+                </th>
                 <td>
                     {{$message->no_surat}}
                 </td>
             </tr>
             <tr>
-                <td>
+                <th>
                     Tanggal Surat
-                </td>
+                </th>
                 <td>
-                    {{$message->tanggal_surat}}
+                  
+                     {{\Carbon\Carbon::create($message->tanggal_surat)->format('d F Y')}}
                 </td>
             </tr>
             <tr>
-                <td>
+                <th>
                     Tujuan Surat
-                </td>
+                </th>
                 <td>
                     {{$message->tujuan_surat}}
                 </td>
             </tr>
             <tr>
-                <td>
+                <th>
                     Tanggal Terima
-                </td>
+                </th>
                 <td>
-                    {{$message->tanggal_terima}}
+                    {{\Carbon\Carbon::create($message->tanggal_terima)->format('d F Y')}}
                 </td>
             </tr>
             <tr>
-                <td>
+                <th>
                     Perihal
-                </td>
+                </th>
                 <td>
                     {{$message->perihal}}
                 </td>
             </tr>
         </table>
-    </div>
-    <p >yang menyerahkan yang menerima</p>
-    <p>{{$message->sumber_surat}} {{$user->name}}</p>
+
+    <table style="margin-top: 100px; width:100%;">
+        <tr>
+            <td style="text-align: center; padding:0; border:none">Yang Menyerahkan</td>
+            <td style="text-align: center; padding:0; border:none">Yang Menerima</td>
+        </tr>
+        <tr>
+            <th style="text-align: center; padding-top: 100px; border:none">{{$message->sumber_surat}}</th>
+            <th style="text-align: center; padding-top: 100px; border:none">Sekretaris</th>
+        </tr>
+    </table>
+  
+
+
 </body>
 </html>

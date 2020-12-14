@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 use App\Models\SuratMasuk;
 
@@ -168,5 +169,10 @@ class SuratMasukController extends Controller
         return response()->json([
             'message' => 'deleted successfully'
         ], 200);
+    }
+
+    public function tandaTerima($id){
+        $user = JWTAuth::user();
+        $message = SuratMasuk::FindOrFail($id);
     }
 }

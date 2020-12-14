@@ -54,6 +54,7 @@ Route::group(['prefix' => '/surat-keluar', 'middleware' => 'jwt.auth'], function
 |
 */
 
+Route::get('/surat-masuk/{surat-masuk}/tanda_terima', 'SuratMasukController@tandaTerima')->middleware('jwt.auth');
 Route::resource('/surat-masuk', 'SuratMasukController')->middleware('jwt.auth')->except('create', 'edit');
 
 

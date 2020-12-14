@@ -11,73 +11,83 @@
         .center{
             margin: 5px auto;
         }
+         td, th {
+        border: 1px solid #2c2c2c;
+        text-align: left;
+        padding: 8px;
+        }
+
+        th {
+            width: 16%;
+            font-size: 14px
+        }
     </style>
 </head>
 <body>
     <div>
-        <img class="" src="files/kop_surat/kop-surat-dummy.jpg" height="100px" alt="">
+        <img class="" src="files/kop_surat/kop-surat-dummy.jpg"  width="100%" alt="Kop Surat">
     </div>
 
-    <hr>
+    {{-- <hr> --}}
 
     <div>
-        <h1 class="text-center"><b><u>Surat Masuk Custom</u></b></h1>
+        <h2 class="text-center">SURAT MASUK CUSTOM</h2>
     </div>
 
     <div>
-        <table class="center" border="1">
+        <table style="width: 100%;  border-collapse: collapse;"  >
             <tr>
-                <td>
+                <th>
                     Surat Dari
-                </td>
+                </th>
                 <td>
                     {{$message->sumber_surat}}
                 </td>
-                <td>
+                <th>
                     Diterima Tanggal
-                </td>
+                </th>
                 <td>
                     {{$message->tanggal_terima}}
                 </td>
             </tr>
             <tr>
-                <td>
+                <th>
                     Tanggal Surat
-                </td>
+                </th>
                 <td>
                     {{$message->tanggal_surat}}
                 </td>
-                <td>
+                <th>
                     Nomor Agenda
-                </td>
+                </th>
                 <td>
                     {{$message->tanggal_terima}}
                 </td>
             </tr>
             <tr>
-                <td>
+                <th>
                     Nomor Surat
-                </td>
+                </th>
                 <td>
                     {{$message->no_surat}}
                 </td>
-                <td>
+                <th>
                     Tujuan Surat
-                </td>
+                </th>
                 <td>
                     {{$message->tujuan_surat}}
                 </td>
             </tr>
             <tr>
-                <td>
+                <th>
                     Perihal
-                </td>
+                </th>
                 <td>
                     {{$message->perihal}}
                 </td>
-                <td>
+                <th>
                     Keterangan
-                </td>
+                </th>
                 <td>
                     {{$message->keterangan}}
                 </td>

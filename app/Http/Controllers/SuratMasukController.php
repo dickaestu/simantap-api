@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
+use Tymon\JWTAuth\Facades\JWTAuth;
+
+use PDF;
 
 use App\Models\SuratMasuk;
 
@@ -41,7 +44,7 @@ class SuratMasukController extends Controller
             'sumber_surat' => 'required|string|max:255',
             'tujuan_surat' => 'required|string|max:255',
             'perihal' => 'required|string|max:255',
-            'file' => 'required|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
+            'file.*' => 'required|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
             'keterangan' => 'nullable',
         ]);
 
@@ -168,5 +171,38 @@ class SuratMasukController extends Controller
         return response()->json([
             'message' => 'deleted successfully'
         ], 200);
+    }
+
+    public function tandaTerima($id, $response){
+        $user = JWTAuth::user();
+        $message = SuratMasuk::FindOrFail($id);
+
+        $pdf = PDF::loadView('templates.letter_receipt',[
+            'user' => $user,
+            'message' => $message
+        ]);
+
+        if($response == 'view'){
+            return $pdf->stream();
+        } else {
+            return $pdf->download('tanda_terima_surat-'.$message->no_surat.'.pdf');
+        }
+
+    }
+
+    public function detailSurat($id, $response){
+        $user = JWTAuth::user();
+        $message = SuratMasuk::FindOrFail($id);
+
+        $pdf = PDF::loadView('templates.letter_detail',[
+            'user' => $user,
+            'message' => $message
+        ]);
+
+        if($response == 'view'){
+            return $pdf->stream();
+        } else {
+            return $pdf->download('detail_surat-'.$message->no_surat.'.pdf');
+        }
     }
 }

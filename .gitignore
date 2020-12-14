@@ -1,6 +1,7 @@
 /node_modules
 /public/hot
-/public/files
+/public/files/surat_masuk
+/public/files/surat_keluar
 /public/storage
 /storage/*.key
 /vendor

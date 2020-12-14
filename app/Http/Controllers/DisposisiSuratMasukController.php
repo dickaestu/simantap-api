@@ -7,6 +7,7 @@ use App\Models\SuratMasuk;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use PDF;
 
 class DisposisiSuratMasukController extends Controller
 {
@@ -19,7 +20,7 @@ class DisposisiSuratMasukController extends Controller
     {
         $dispositions = Disposition::where('disposable_type', 'App\Models\SuratMasuk')->get();
 
-        $mappingDispositions = $dispositions->map(function($item){
+        $mappingDispositions = $dispositions->map(function ($item) {
             $item->tembusan = $item->sections()->get();
 
             return $item;
@@ -29,7 +30,6 @@ class DisposisiSuratMasukController extends Controller
             'message' => 'fetched successfully',
             'data' => $mappingDispositions
         ], 200);
-
     }
 
     /**
@@ -41,6 +41,7 @@ class DisposisiSuratMasukController extends Controller
     public function store(Request $request, $suratId)
     {
         $validator = Validator::make($request->all(), [
+            'kepada'  => 'required|numeric',
             'catatan' => 'required',
         ]);
 
@@ -53,10 +54,11 @@ class DisposisiSuratMasukController extends Controller
         } else {
             $incomingMessage = SuratMasuk::FindOrFail($suratId);
             $disposition = $incomingMessage->dispositions()->create([
+                'kepada'  => $request->kepada,
                 'catatan' => $request->catatan
             ]);
 
-            if($tembusan = $request->tembusan){
+            if ($tembusan = $request->tembusan) {
                 $disposition->sections()->sync($tembusan);
             }
 
@@ -77,9 +79,9 @@ class DisposisiSuratMasukController extends Controller
      */
     public function show($id)
     {
-        $disposition = Disposition::with('sections')->where('id',$id)->first();
+        $disposition = Disposition::with('sections')->where('id', $id)->first();
 
-        if($disposition){
+        if ($disposition) {
             $response = [
                 'message' => 'fetched Successfully',
                 'data' => $disposition
@@ -105,6 +107,7 @@ class DisposisiSuratMasukController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
+            'kepada'  => 'required|numeric',
             'catatan' => 'required',
         ]);
 
@@ -118,10 +121,11 @@ class DisposisiSuratMasukController extends Controller
             $disposition = Disposition::FindOrFail($id);
 
             $disposition->update([
+                'kepada'  => $request->kepada,
                 'catatan' => $request->catatan
             ]);
 
-            if($tembusan = $request->tembusan){
+            if ($tembusan = $request->tembusan) {
                 $disposition->sections()->sync($tembusan);
             }
 
@@ -144,7 +148,7 @@ class DisposisiSuratMasukController extends Controller
     {
         $disposition = Disposition::FindOrFail($id);
 
-        if($disposition){
+        if ($disposition) {
             $disposition->sections()->sync([]);
             $disposition->delete();
             $response = [
@@ -159,5 +163,20 @@ class DisposisiSuratMasukController extends Controller
         }
 
         return response()->json($response, $status);
+    }
+
+    public function tandaTerima($id, $response)
+    {
+        $disposition = Disposition::FindOrFail($id);
+
+        $pdf = PDF::loadView('templates.disposition', [
+            'disposition' => $disposition
+        ]);
+
+        if ($response == 'view') {
+            return $pdf->stream();
+        } else {
+            return $pdf->download('disposisi_surat_masuk-' . $disposition->id . '.pdf');
+        }
     }
 }

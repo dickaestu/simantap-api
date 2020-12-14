@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::group(['prefix' => '/surat-masuk', 'middleware' => 'jwt.auth'], function () {
+    Route::get('/disposisi/{disposisi}/{response}', 'DisposisiSuratMasukController@tandaTerima');
     Route::get('/disposisi', 'DisposisiSuratMasukController@index');
     Route::post('{surat}/disposisi', 'DisposisiSuratMasukController@store');
     Route::get('/disposisi/{disposisi}', 'DisposisiSuratMasukController@show');
@@ -53,7 +54,8 @@ Route::group(['prefix' => '/surat-keluar', 'middleware' => 'jwt.auth'], function
 |--------------------------------------------------------------------------
 |
 */
-
+Route::get('/surat-masuk/{surat_masuk}/detail-surat/{response}', 'SuratMasukController@detailSurat')->middleware('jwt.auth');
+Route::get('/surat-masuk/{surat_masuk}/tanda-terima/{response}', 'SuratMasukController@tandaTerima')->middleware('jwt.auth');
 Route::resource('/surat-masuk', 'SuratMasukController')->middleware('jwt.auth')->except('create', 'edit');
 
 

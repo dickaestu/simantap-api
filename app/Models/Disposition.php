@@ -6,11 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Disposition extends Model
 {
-    protected $fillable = ['catatan'];
+    protected $fillable = ['catatan', 'kepada'];
 
     public function disposable()
     {
         return $this->morphTo();
+    }
+
+    public function sector()
+    {
+        return $this->belongsTo('App\Models\Bagian', 'kepada');
     }
 
     public function sections()

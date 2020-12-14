@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
+use PDF;
+
 use App\Models\SuratMasuk;
 
 class SuratMasukController extends Controller
@@ -171,8 +173,20 @@ class SuratMasukController extends Controller
         ], 200);
     }
 
-    public function tandaTerima($id){
+    public function tandaTerima($id, $response){
         $user = JWTAuth::user();
         $message = SuratMasuk::FindOrFail($id);
+
+        $pdf = PDF::loadView('templates.letter_receipt',[
+            'user' => $user,
+            'message' => $message
+        ]);
+
+        if($response == 'view'){
+            return $pdf->stream();
+        } else {
+            return $pdf->download('tanda_terima_surat-'.$message->no_surat.'.pdf');
+        }
+
     }
 }

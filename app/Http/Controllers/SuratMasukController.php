@@ -189,4 +189,20 @@ class SuratMasukController extends Controller
         }
 
     }
+
+    public function detailSurat($id, $response){
+        $user = JWTAuth::user();
+        $message = SuratMasuk::FindOrFail($id);
+
+        $pdf = PDF::loadView('templates.letter_detail',[
+            'user' => $user,
+            'message' => $message
+        ]);
+
+        if($response == 'view'){
+            return $pdf->stream();
+        } else {
+            return $pdf->download('detail_surat-'.$message->no_surat.'.pdf');
+        }
+    }
 }

@@ -11,105 +11,118 @@
         .center{
             margin: 5px auto;
         }
+         td, th {
+        border: 1px solid #2c2c2c;
+        text-align: left;
+        padding: 8px;
+        }
+
+        th {
+            width: 15%;
+            font-size: 14px
+        }
     </style>
 </head>
 <body>
     <div>
-        <img class="" src="files/kop_surat/kop-surat-dummy.jpg" height="100px" alt="">
+        <img class="" src="files/kop_surat/kop-surat-dummy.jpg"  width="100%" alt="Kop Surat">
     </div>
 
     <hr>
 
     <div>
-        <h1 class="text-center"><b><u>Lembar Disposisi</u></b></h1>
+         <h2 class="text-center">DISPOSISI SURAT</h2>
     </div>
 
     <div>
-        <table class="center" border="1">
+        <table style="width: 100%;  border-collapse: collapse;">
             <tr>
-                <td>
+                <th>
                     Surat Dari
-                </td>
+                </th>
                 <td>
                     {{$disposition->disposable->sumber_surat}}
                 </td>
-                <td>
+                <th>
                     Diterima Tanggal
-                </td>
+                </th>
                 <td>
-                    {{$disposition->disposable->tanggal_terima}}
+                    {{\Carbon\Carbon::create($disposition->disposable->tanggal_terima)->format('d F Y')}}
                 </td>
             </tr>
             <tr>
-                <td>
+                <th>
                     Tanggal Surat
-                </td>
+                </th>
                 <td>
-                    {{$disposition->disposable->tanggal_surat}}
+                       {{\Carbon\Carbon::create($disposition->disposable->tanggal_surat)->format('d F Y')}}
                 </td>
-                <td>
+                <th>
                     Nomor Agenda
-                </td>
+                </th>
                 <td>
-                    {{$disposition->disposable->tanggal_terima}}
+                    {{$disposition->disposable->no_agenda}}
                 </td>
             </tr>
             <tr>
-                <td>
+                <th>
                     Nomor Surat
-                </td>
+                </th>
                 <td>
                     {{$disposition->disposable->no_surat}}
                 </td>
-                <td>
+                <th>
                     Disposisi ke
-                </td>
+                </th>
                 <td>
                     {{$disposition->sector->nama_bagian}}
                 </td>
             </tr>
             <tr>
-                <td>
+                <th>
                     Tujuan Surat
-                </td>
+                </th>
                 <td>
                     {{$disposition->disposable->tujuan_surat}}
                 </td>
-                <td>
+                <th>
                     Tanggal Disposisi
-                </td>
+                </th>
                 <td>
-                    {{$disposition->created_at}}
+                    {{$disposition->created_at->format('d F Y')}}
                 </td>
             </tr>
             <tr>
-                <td>
+                <th>
                     Perihal
-                </td>
-                <td colspan="3">
+                </th>
+                <td >
                     {{$disposition->disposable->perihal}}
+                </td>
+                <th>
+                    Keterangan
+                </th>
+                <td >
+                    {{$disposition->disposable->keterangan}}
                 </td>
             </tr>
         </table>
 
-        <table class="center" border="1">
+        <table style="width: 100%;  border-collapse: collapse; margin-top:50px">
             <tr>
+                <th>Tembusan:</th>
                 <th>Isi Disposisi:</th>
             </tr>
             <tr>
+                <td>
+                   <ul>
+                    @foreach ($disposition->sections as $section)
+                        <li>{{$section->nama_bagian}}</li>
+                    @endforeach
+                   </ul>
+                </td>
                 <td>{{$disposition->catatan}}</td>
             </tr>
-        </table>
-
-        <table class="center" border="1">
-            <tr>
-                <th>Tembusan:</th>
-            </tr>
-            @foreach($disposition->sections as $section)
-                <tr>
-                    <td>{{$section->nama_bagian}}</td>
-                </tr>
-            @endforeach
         </table>
     </div>
 </body>

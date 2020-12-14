@@ -47,7 +47,7 @@
                     Diterima Tanggal
                 </th>
                 <td>
-                    {{$message->tanggal_terima}}
+                    {{\Carbon\Carbon::create($message->tanggal_terima)->format('d F Y')}}
                 </td>
             </tr>
             <tr>
@@ -55,13 +55,13 @@
                     Tanggal Surat
                 </th>
                 <td>
-                    {{$message->tanggal_surat}}
+                    {{ \Carbon\Carbon::create($message->tanggal_surat)->format('d F Y')}}
                 </td>
                 <th>
                     Nomor Agenda
                 </th>
                 <td>
-                    {{$message->tanggal_terima}}
+                    {{$message->no_agenda}} 
                 </td>
             </tr>
             <tr>

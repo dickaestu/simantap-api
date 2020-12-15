@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 
+use Tymon\JWTAuth\Facades\JWTAuth;
+
 class SuratKeluarController extends Controller
 {
     /**
@@ -17,7 +19,7 @@ class SuratKeluarController extends Controller
     public function index()
     {
 
-        $data = SuratKeluar::orderBy('created_at', 'desc')->get();
+        $data = SuratKeluar::with(['created_by.role', 'updated_by.role'])->orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'status' => 'Success',
@@ -43,6 +45,7 @@ class SuratKeluarController extends Controller
      */
     public function store(Request $request)
     {
+        $user = JWTAuth::user();
         $validator = Validator::make($request->all(), [
             'no_surat' => 'required|string|max:50|unique:surat_keluar',
             'tanggal_surat' => 'required|date',
@@ -74,6 +77,7 @@ class SuratKeluarController extends Controller
                 'perihal' => $request->perihal,
                 'keterangan' => $request->keterangan,
                 'file' => $fileName,
+                'created_by' => $user->id
             ]);
             if ($surat_keluar) {
                 $status = "success";
@@ -102,7 +106,7 @@ class SuratKeluarController extends Controller
     public function update(Request $request, $id)
     {
         $item = SuratKeluar::findOrFail($id);
-
+        $user = JWTAuth::user();
         $validator = Validator::make($request->all(), [
             'no_surat' => 'required|string|max:50|unique:surat_keluar,no_surat,' . $item->id,
             'tanggal_surat' => 'required|date',
@@ -137,6 +141,7 @@ class SuratKeluarController extends Controller
                 'perihal' => $request->perihal,
                 'keterangan' => $request->keterangan,
                 'file' => $fileName ?? $item->file,
+                'updated_by' => $user->id
             ]);
             if ($surat_keluar) {
                 $status = "success";

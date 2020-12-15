@@ -18,9 +18,22 @@ class SuratMasuk extends Model
         'keterangan',
         'file',
         'status',
+        'created_by',
+        'updated_by',
     ];
 
-    public function dispositions(){
+    public function dispositions()
+    {
         return $this->morphOne('App\Models\Disposition', 'disposable');
+    }
+
+    public function created_by()
+    {
+        return $this->belongsTo('App\Models\User', 'created_by');
+    }
+
+    public function updated_by()
+    {
+        return $this->belongsTo('App\Models\User', 'updated_by');
     }
 }

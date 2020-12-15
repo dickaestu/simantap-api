@@ -20,7 +20,7 @@ class SuratMasukController extends Controller
      */
     public function index()
     {
-        $incomingMessages = SuratMasuk::orderBy('created_at', 'desc')->get();
+        $incomingMessages = SuratMasuk::with(['created_by.role', 'updated_by.role'])->orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'message' => 'fetched successfully',
@@ -36,6 +36,7 @@ class SuratMasukController extends Controller
      */
     public function store(Request $request)
     {
+        $user = JWTAuth::user();
         $validator = Validator::make($request->all(), [
             'no_agenda' => 'required|string|max:50',
             'no_surat' => 'required|string|max:50|unique:surat_masuk',
@@ -71,6 +72,7 @@ class SuratMasukController extends Controller
                 'perihal' => $request->perihal,
                 'file' => $fileName,
                 'keterangan' => $request->keterangan,
+                'created_by' => $user->id
             ]);
 
             $response = [
@@ -107,6 +109,7 @@ class SuratMasukController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $user = JWTAuth::user();
         $message = SuratMasuk::FindOrFail($id);
         $validator = Validator::make($request->all(), [
             'no_agenda' => 'required|string|max:50',
@@ -118,6 +121,7 @@ class SuratMasukController extends Controller
             'perihal' => 'required|string|max:255',
             'file' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
             'keterangan' => 'nullable',
+
         ]);
 
         if ($validator->fails()) {
@@ -145,6 +149,7 @@ class SuratMasukController extends Controller
                 'file' => $fileName ?? $message->file,
                 'perihal' => $request->perihal,
                 'keterangan' => $request->keterangan,
+                'updated_by' => $user->id
             ]);
 
             $response = [
@@ -173,36 +178,37 @@ class SuratMasukController extends Controller
         ], 200);
     }
 
-    public function tandaTerima($id, $response){
+    public function tandaTerima($id, $response)
+    {
         $user = JWTAuth::user();
         $message = SuratMasuk::FindOrFail($id);
 
-        $pdf = PDF::loadView('templates.letter_receipt',[
+        $pdf = PDF::loadView('templates.letter_receipt', [
             'user' => $user,
             'message' => $message
         ]);
 
-        if($response == 'view'){
+        if ($response == 'view') {
             return $pdf->stream();
         } else {
-            return $pdf->download('tanda_terima_surat-'.$message->no_surat.'.pdf');
+            return $pdf->download('tanda_terima_surat-' . $message->no_surat . '.pdf');
         }
-
     }
 
-    public function detailSurat($id, $response){
+    public function detailSurat($id, $response)
+    {
         $user = JWTAuth::user();
         $message = SuratMasuk::FindOrFail($id);
 
-        $pdf = PDF::loadView('templates.letter_detail',[
+        $pdf = PDF::loadView('templates.letter_detail', [
             'user' => $user,
             'message' => $message
         ]);
 
-        if($response == 'view'){
+        if ($response == 'view') {
             return $pdf->stream();
         } else {
-            return $pdf->download('detail_surat-'.$message->no_surat.'.pdf');
+            return $pdf->download('detail_surat-' . $message->no_surat . '.pdf');
         }
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Disposition;
 use App\Models\SuratKeluar;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Validator;
 
 class DisposisiSuratKeluarController extends Controller
@@ -48,6 +49,7 @@ class DisposisiSuratKeluarController extends Controller
      */
     public function store(Request $request, $suratId)
     {
+        $user = JWTAuth::user();
         $validator = Validator::make($request->all(), [
             'kepada'  => 'required|numeric',
             'catatan' => 'required',
@@ -64,7 +66,8 @@ class DisposisiSuratKeluarController extends Controller
             $outcomingMessage = SuratKeluar::FindOrFail($suratId);
             $disposition = $outcomingMessage->dispositions()->create([
                 'kepada'  => $request->kepada,
-                'catatan' => $request->catatan
+                'catatan' => $request->catatan,
+                'created_by' => $user->id
             ]);
 
             if ($tembusan = $request->tembusan) {
@@ -115,6 +118,7 @@ class DisposisiSuratKeluarController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $user = JWTAuth::user();
         $validator = Validator::make($request->all(), [
             'kepada'  => 'required|numeric',
             'catatan' => 'required',
@@ -131,7 +135,8 @@ class DisposisiSuratKeluarController extends Controller
             $disposition = Disposition::FindOrFail($id);
             $disposition->update([
                 'kepada'  => $request->kepada,
-                'catatan' => $request->catatan
+                'catatan' => $request->catatan,
+                'updated_by' => $user->id
             ]);
 
             if ($tembusan = $request->tembusan) {

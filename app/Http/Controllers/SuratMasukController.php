@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bagian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
@@ -20,7 +21,10 @@ class SuratMasukController extends Controller
      */
     public function index()
     {
-        $incomingMessages = SuratMasuk::with(['created_by.role', 'updated_by.role'])->orderBy('created_at', 'desc')->get();
+        $user = JWTAuth::user();
+        $incomingMessages = SuratMasuk::with(['created_by', 'updated_by'])->whereHas('created_by', function ($item) use ($user) {
+            return $item->where('bagian_id', $user->bagian_id);
+        })->orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'message' => 'fetched successfully',
@@ -182,10 +186,14 @@ class SuratMasukController extends Controller
     {
         $user = JWTAuth::user();
         $message = SuratMasuk::FindOrFail($id);
+        $bagian = Bagian::take(4)->get();
+
+
 
         $pdf = PDF::loadView('templates.letter_receipt', [
             'user' => $user,
-            'message' => $message
+            'message' => $message,
+            'bagian' => $bagian
         ]);
 
         if ($response == 'view') {

@@ -18,8 +18,11 @@ class SuratKeluarController extends Controller
      */
     public function index()
     {
+        $user = JWTAuth::user();
 
-        $data = SuratKeluar::with(['created_by.role', 'updated_by.role'])->orderBy('created_at', 'desc')->get();
+        $data = SuratKeluar::with(['created_by', 'updated_by'])->whereHas('created_by', function ($item) use ($user) {
+            return $item->where('bagian_id', $user->bagian_id);
+        })->orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'status' => 'Success',

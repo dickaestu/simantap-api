@@ -88,14 +88,22 @@
             </tr>
         </table>
 
-    <table style="margin-top: 100px; width:100%;">
+    <table style="margin-top: 80px; width:100%;">
         <tr>
-            <td style="text-align: center; padding:0; border:none">Yang Menyerahkan</td>
-            <td style="text-align: center; padding:0; border:none">Yang Menerima</td>
+            <td style="text-align: center; padding:0; border:none">Yang Menyetujui</td>
+            <td style="text-align: center; padding:0; border:none">Yang Menyetujui</td>
         </tr>
         <tr>
-            <th style="text-align: center; padding-top: 100px; border:none">{{$message->sumber_surat}}</th>
-            <th style="text-align: center; padding-top: 100px; border:none">Sekretaris</th>
+            <th style="text-align: center; padding-top: 100px; border:none">{{ucwords($bagian[0]['nama_bagian'])}}</th>
+            <th style="text-align: center; padding-top: 100px; border:none">{{ ucwords($bagian[1]['nama_bagian']) }}</th>
+        </tr>
+        <tr>
+            <td style="text-align: center; padding:0; padding-top:50px; border:none">Yang Menyetujui</td>
+            <td style="text-align: center; padding:0; padding-top:50px; border:none">Yang Menyetujui</td>
+        </tr>
+        <tr>
+            <th style="text-align: center; padding-top: 100px; border:none">{{ucwords($bagian[2]['nama_bagian'])}}</th>
+            <th style="text-align: center; padding-top: 100px; border:none">{{ ucwords($bagian[3]['nama_bagian']) }}</th>
         </tr>
     </table>
   

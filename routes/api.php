@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['prefix' => '/surat-masuk', 'middleware' => 'jwt.auth'], function () {
+Route::group(['prefix' => '/surat-masuk'], function () {
     Route::get('/disposisi/{disposisi}/{response}', 'DisposisiSuratMasukController@tandaTerima');
     Route::get('/disposisi', 'DisposisiSuratMasukController@index');
     Route::post('{surat}/disposisi', 'DisposisiSuratMasukController@store');
@@ -36,7 +36,7 @@ Route::group(['prefix' => '/surat-masuk', 'middleware' => 'jwt.auth'], function 
 
 /*
 |--------------------------------------------------------------------------
-| Disposisi Surat KEluar Routes
+| Disposisi Surat Keluar Routes
 |--------------------------------------------------------------------------
 |
 */

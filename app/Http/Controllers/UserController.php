@@ -43,6 +43,7 @@ class UserController extends Controller
             'username' => 'required|string|max:20|unique:users',
             'password' => 'required|string|min:8',
             'roles_id' => 'required',
+            'bagian_id' => 'required',
         ]);
 
         $status = "error";
@@ -60,6 +61,7 @@ class UserController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'roles_id' => $request->roles_id,
+                'bagian_id' => $request->bagian_id,
             ]);
             if ($user) {
                 $status = "success";

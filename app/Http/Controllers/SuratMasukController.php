@@ -23,14 +23,9 @@ class SuratMasukController extends Controller
     {
         $incomingMessages = SuratMasuk::with(['created_by', 'updated_by'])->orderBy('created_at', 'desc')->get();
 
-        $mappingIncoming = $incomingMessages->map(function($item){
-            $item->no_agenda = strtoupper($item->klasifikasi[0])."-".sprintf('%05d',$item->no_agenda);
-            return $item;
-        });
-
         return response()->json([
             'message' => 'fetched successfully',
-            'data' => $mappingIncoming
+            'data' => $incomingMessages
         ], 200);
     }
 
@@ -48,7 +43,6 @@ class SuratMasukController extends Controller
             'tanggal_surat' => 'required|date',
             'tanggal_terima' => 'required|date',
             'sumber_surat' => 'required|string|max:255',
-            'tujuan_surat' => 'required|string|max:255',
             'perihal' => 'required|string|max:255',
             'file.*' => 'required|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
             'keterangan' => 'nullable',
@@ -76,7 +70,6 @@ class SuratMasukController extends Controller
                 'tanggal_surat' => $request->tanggal_surat,
                 'tanggal_terima' => $request->tanggal_terima,
                 'sumber_surat' => $request->sumber_surat,
-                'tujuan_surat' => $request->tujuan_surat,
                 'perihal' => $request->perihal,
                 'file' => $fileName,
                 'keterangan' => $request->keterangan,
@@ -100,14 +93,16 @@ class SuratMasukController extends Controller
      * @return \Illuminate\Http\Response
      */ 
     function generateAgenda($classification){
+        $code = strtoupper($classification[0]);
         $message = SuratMasuk::where('klasifikasi', $classification)->latest()->first();
         if($message){
-            $agenda = $message->no_agenda + 1;
+            $explode = explode('-', $message->no_agenda);
+            $no_agenda = $code."-".sprintf('%05d',($explode[1]+1));
         } else {
-            $agenda = 1;
+            $no_agenda = $code."-". sprintf('%05d',1);
         }
 
-        return $agenda;
+        return $no_agenda;
     }
 
     /**
@@ -142,7 +137,6 @@ class SuratMasukController extends Controller
             'tanggal_surat' => 'required|date',
             'tanggal_terima' => 'required|date',
             'sumber_surat' => 'required|string|max:255',
-            'tujuan_surat' => 'required|string|max:255',
             'perihal' => 'required|string|max:255',
             'file' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
             'keterangan' => 'nullable',
@@ -171,7 +165,6 @@ class SuratMasukController extends Controller
                 'tanggal_surat' => $request->tanggal_surat,
                 'tanggal_terima' => $request->tanggal_terima,
                 'sumber_surat' => $request->sumber_surat,
-                'tujuan_surat' => $request->tujuan_surat,
                 'file' => $fileName ?? $message->file,
                 'perihal' => $request->perihal,
                 'keterangan' => $request->keterangan,

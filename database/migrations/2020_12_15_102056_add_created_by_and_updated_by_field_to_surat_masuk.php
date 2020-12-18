@@ -27,8 +27,8 @@ class AddCreatedByAndUpdatedByFieldToSuratMasuk extends Migration
     public function down()
     {
         Schema::table('surat_masuk', function (Blueprint $table) {
-            $table->bigInteger('created_by')->nullable();
-            $table->bigInteger('updated_by')->nullable();
+            $table->dropColumn('created_by');
+            $table->dropColumn('updated_by');
         });
     }
 }

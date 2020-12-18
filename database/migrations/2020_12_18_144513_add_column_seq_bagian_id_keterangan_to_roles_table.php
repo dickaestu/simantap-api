@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddBagianIdFieldToUsersTable extends Migration
+class AddColumnSeqBagianIdKeteranganToRolesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,10 @@ class AddBagianIdFieldToUsersTable extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('roles', function (Blueprint $table) {
+            $table->tinyInteger('seq');
             $table->bigInteger('bagian_id')->unsigned();
+            $table->string('keterangan');
         });
     }
 
@@ -25,8 +27,10 @@ class AddBagianIdFieldToUsersTable extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->bigInteger('bagian_id')->unsbagian();
+        Schema::table('roles', function (Blueprint $table) {
+            $table->dropColumn('seq');
+            $table->dropColumn('bagian_id');
+            $table->dropColumn('keterangan');
         });
     }
 }

@@ -11,4 +11,8 @@ class Bagian extends Model
     protected $fillable = [
         'nama_bagian'
     ];
+
+    public function roles(){
+        return $this->hasMany('App\Models\Role');
+    }
 }

@@ -20,6 +20,7 @@ class SuratMasuk extends Model
         'status',
         'created_by',
         'updated_by',
+        'klasifikasi'
     ];
 
     public function dispositions()

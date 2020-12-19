@@ -20,20 +20,32 @@ class BagianTableSeeder extends Seeder
                     'updated_at' => now(),
                 ],
                 [
-                    'nama_bagian' => 'kasubag',
+                    'nama_bagian' => 'kasubbagrenmin',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ],
                 [
-                    'nama_bagian' => 'paur',
+                    'nama_bagian' => 'kabagdalpers',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ],
                 [
-                    'nama_bagian' => 'staf min',
+                    'nama_bagian' => 'kabagbinkar',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ],
+                [
+                    'nama_bagian' => 'kabagwatpers',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'nama_bagian' => 'kabagpsi',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+               
+
             ]
         );
     }

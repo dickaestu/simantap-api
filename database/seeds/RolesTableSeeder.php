@@ -2,7 +2,6 @@
 
 use App\Models\Role;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class RolesTableSeeder extends Seeder
 {
@@ -13,22 +12,17 @@ class RolesTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('roles')->insert([
-            [
-                'role_name' => 'sekretaris',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'role_name' => 'admin',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'role_name' => 'manager',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+        Role::create([
+            'role_name' => 'admin',
         ]);
+
+        Role::create([
+            'role_name' => 'manager',
+        ]);
+
+        Role::create([
+            'role_name' => 'sekretaris',
+        ]);
+            
     }
 }

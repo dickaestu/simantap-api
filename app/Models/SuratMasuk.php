@@ -13,13 +13,13 @@ class SuratMasuk extends Model
         'tanggal_surat',
         'tanggal_terima',
         'sumber_surat',
-        'tujuan_surat',
         'perihal',
         'keterangan',
         'file',
         'status',
         'created_by',
         'updated_by',
+        'klasifikasi'
     ];
 
     public function dispositions()

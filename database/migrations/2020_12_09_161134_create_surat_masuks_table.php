@@ -20,7 +20,6 @@ class CreateSuratMasuksTable extends Migration
             $table->date('tanggal_surat');
             $table->date('tanggal_terima');
             $table->string('sumber_surat');
-            $table->string('tujuan_surat');
             $table->string('perihal');
             $table->text('keterangan')->nullable();
             $table->text('file');

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Models\SubBagian;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -17,15 +17,18 @@ class UserTableSeeder extends Seeder
     {
         $faker = Faker::create('id_ID');
 
-        for ($i = 0; $i < 10; $i++) {
-            User::create([
-                'name' => $faker->name,
-                'roles_id' => mt_rand(1, 3),
-                'bagian_id' => mt_rand(1, 4),
-                'email' => $faker->email,
-                'username' => $faker->userName,
-                'password' => Hash::make('1234567890')
-            ]);
+        $subs = SubBagian::All();
+
+        foreach($subs as $sub){
+            for ($i = 1; $i < 4; $i++) {
+                $sub->users()->create([
+                    'name' => $faker->name,
+                    'roles_id' => $i,
+                    'email' => $faker->email,
+                    'username' => $faker->userName,
+                    'password' => Hash::make('1234567890')
+                ]);
+            }
         }
     }
 }

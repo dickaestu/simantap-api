@@ -21,10 +21,7 @@ class SuratMasukController extends Controller
      */
     public function index()
     {
-        $user = JWTAuth::user();
-        $incomingMessages = SuratMasuk::with(['created_by', 'updated_by'])->whereHas('created_by', function ($item) use ($user) {
-            return $item->where('bagian_id', $user->bagian_id);
-        })->orderBy('created_at', 'desc')->get();
+        $incomingMessages = SuratMasuk::with(['created_by', 'updated_by'])->orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'message' => 'fetched successfully',
@@ -42,15 +39,14 @@ class SuratMasukController extends Controller
     {
         $user = JWTAuth::user();
         $validator = Validator::make($request->all(), [
-            'no_agenda' => 'required|string|max:50',
             'no_surat' => 'required|string|max:50|unique:surat_masuk',
             'tanggal_surat' => 'required|date',
             'tanggal_terima' => 'required|date',
             'sumber_surat' => 'required|string|max:255',
-            'tujuan_surat' => 'required|string|max:255',
             'perihal' => 'required|string|max:255',
             'file.*' => 'required|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
             'keterangan' => 'nullable',
+            'klasifikasi' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -66,17 +62,19 @@ class SuratMasukController extends Controller
 
             $file->move('files/surat_masuk', $fileName);
 
+            $agenda = $this->generateAgenda($request->klasifikasi);
+
             SuratMasuk::create([
-                'no_agenda' => $request->no_agenda,
+                'no_agenda' => $agenda,
                 'no_surat' => $request->no_surat,
                 'tanggal_surat' => $request->tanggal_surat,
                 'tanggal_terima' => $request->tanggal_terima,
                 'sumber_surat' => $request->sumber_surat,
-                'tujuan_surat' => $request->tujuan_surat,
                 'perihal' => $request->perihal,
                 'file' => $fileName,
                 'keterangan' => $request->keterangan,
-                'created_by' => $user->id
+                'created_by' => $user->id,
+                'klasifikasi' => $request->klasifikasi
             ]);
 
             $response = [
@@ -86,6 +84,26 @@ class SuratMasukController extends Controller
         }
 
         return response()->json($response, $status);
+    }
+
+    /**
+     * Auto Generate Nomor Agenda.
+     *
+     * @param  string  $klasifikasi
+     * @return \Illuminate\Http\Response
+     */
+    function generateAgenda($classification)
+    {
+        $code = strtoupper($classification[0]);
+        $message = SuratMasuk::where('klasifikasi', $classification)->latest()->first();
+        if ($message) {
+            $explode = explode('-', $message->no_agenda);
+            $no_agenda = $code . "-" . sprintf('%05d', ($explode[1] + 1));
+        } else {
+            $no_agenda = $code . "-" . sprintf('%05d', 1);
+        }
+
+        return $no_agenda;
     }
 
     /**
@@ -116,12 +134,10 @@ class SuratMasukController extends Controller
         $user = JWTAuth::user();
         $message = SuratMasuk::FindOrFail($id);
         $validator = Validator::make($request->all(), [
-            'no_agenda' => 'required|string|max:50',
             'no_surat' => 'required|string|max:50|unique:surat_masuk,no_surat,' . $message->id,
             'tanggal_surat' => 'required|date',
             'tanggal_terima' => 'required|date',
             'sumber_surat' => 'required|string|max:255',
-            'tujuan_surat' => 'required|string|max:255',
             'perihal' => 'required|string|max:255',
             'file' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
             'keterangan' => 'nullable',
@@ -144,16 +160,14 @@ class SuratMasukController extends Controller
             }
 
             $message->update([
-                'no_agenda' => $request->no_agenda,
                 'no_surat' => $request->no_surat,
                 'tanggal_surat' => $request->tanggal_surat,
                 'tanggal_terima' => $request->tanggal_terima,
                 'sumber_surat' => $request->sumber_surat,
-                'tujuan_surat' => $request->tujuan_surat,
                 'file' => $fileName ?? $message->file,
                 'perihal' => $request->perihal,
                 'keterangan' => $request->keterangan,
-                'updated_by' => $user->id
+                'updated_by' => $user->id,
             ]);
 
             $response = [

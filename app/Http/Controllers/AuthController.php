@@ -23,7 +23,7 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $request->username)->orWhere('username', $request->username)->first();
+        $user = User::with(['role', 'bagian.jenis_bagian'])->where('email', $request->username)->orWhere('username', $request->username)->first();
         if (!$user) {
             $response = [
                 'message' => 'Email or username not found.'
@@ -67,7 +67,6 @@ class AuthController extends Controller
     {
         return response()->json([
             'user_data' => $user,
-            'role'  => $user->role()->select('role_name')->first(),
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60

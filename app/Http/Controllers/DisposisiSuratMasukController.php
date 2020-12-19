@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Disposition;
 use App\Models\SuratMasuk;
+use App\Models\SubBagian;
+
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 use Illuminate\Http\Request;
@@ -20,20 +22,17 @@ class DisposisiSuratMasukController extends Controller
     public function index()
     {
         $user = JWTAuth::user();
-        $dispositions = Disposition::with(['disposable'])->where('disposable_type', 'App\Models\SuratMasuk')
-            ->whereHas('created_by', function ($item) use ($user) {
-                return $item->where('bagian_id', $user->bagian_id);
-            })->get();
+        $dispositions = Disposition::with(['disposable'])->where('kepada', $user->sub_bagian_id)->get();
 
-        $mappingDispositions = $dispositions->map(function ($item) {
-            $item->tembusan = $item->sections()->get();
+        // $mappingDispositions = $dispositions->map(function ($item) {
+        //     $item->tembusan = $item->sections()->get();
 
-            return $item;
-        });
+        //     return $item;
+        // });
 
         return response()->json([
             'message' => 'fetched successfully',
-            'data' => $mappingDispositions
+            'data' => $dispositions
         ], 200);
     }
 
@@ -48,7 +47,8 @@ class DisposisiSuratMasukController extends Controller
         $user = JWTAuth::user();
         $validator = Validator::make($request->all(), [
             'kepada'  => 'required|numeric',
-            'catatan' => 'required',
+            'catatan' => 'nullable',
+            'isi_disposisi' => 'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -62,15 +62,16 @@ class DisposisiSuratMasukController extends Controller
             $disposition = $incomingMessage->dispositions()->create([
                 'kepada'  => $request->kepada,
                 'catatan' => $request->catatan,
+                'isi_disposisi' => $request->isi_disposisi,
                 'created_by' => $user->id
             ]);
             $incomingMessage->update([
                 'status' => 'disposisi'
             ]);
 
-            if ($tembusan = $request->tembusan) {
-                $disposition->sections()->sync($tembusan);
-            }
+            // if ($tembusan = $request->tembusan) {
+            //     $disposition->sections()->sync($tembusan);
+            // }
 
             $response = [
                 'message' => 'Stored Successfully',
@@ -89,12 +90,19 @@ class DisposisiSuratMasukController extends Controller
      */
     public function show($id)
     {
-        $disposition = Disposition::with('sections')->where('id', $id)->first();
+        $user = JWTAuth::user();
+        $seq = $user->bagian->seq;
+        $disposition = Disposition::where('id', $id)->latest()->first();
+
 
         if ($disposition) {
+            $allDisposition = Disposition::where('disposable_id', $disposition->disposable_id)->whereHas('subSector', function ($query) use ($seq) {
+                $query->where('seq', '<=', $seq);
+            })->get();
+
             $response = [
                 'message' => 'fetched Successfully',
-                'data' => $disposition
+                'data' => $allDisposition
             ];
             $status = 200;
         } else {
@@ -119,7 +127,8 @@ class DisposisiSuratMasukController extends Controller
         $user = JWTAuth::user();
         $validator = Validator::make($request->all(), [
             'kepada'  => 'required|numeric',
-            'catatan' => 'required',
+            'catatan' => 'nullable',
+            'isi_disposisi' => 'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -134,12 +143,13 @@ class DisposisiSuratMasukController extends Controller
             $disposition->update([
                 'kepada'  => $request->kepada,
                 'catatan' => $request->catatan,
+                'isi_disposisi' => $request->isi_disposisi,
                 'updated_by' => $user->id
             ]);
 
-            if ($tembusan = $request->tembusan) {
-                $disposition->sections()->sync($tembusan);
-            }
+            // if ($tembusan = $request->tembusan) {
+            //     $disposition->sections()->sync($tembusan);
+            // }
 
             $response = [
                 'message' => 'updated Successfully',
@@ -161,7 +171,7 @@ class DisposisiSuratMasukController extends Controller
         $disposition = Disposition::FindOrFail($id);
 
         if ($disposition) {
-            $disposition->sections()->sync([]);
+            // $disposition->sections()->sync([]);
             $disposition->delete();
             $response = [
                 'message' => 'deleted Successfully',
@@ -177,18 +187,53 @@ class DisposisiSuratMasukController extends Controller
         return response()->json($response, $status);
     }
 
-    public function tandaTerima($id, $response)
+    public function cetakDisposisi($id, $response)
     {
-        $disposition = Disposition::FindOrFail($id);
 
-        $pdf = PDF::loadView('templates.disposition', [
-            'disposition' => $disposition
-        ]);
+        $disposition = Disposition::FindOrFail($id);
+        $seq = $disposition->user_created_by->bagian->seq;
+        $bagian_id = $disposition->user_created_by->bagian->bagian_id;
+
+        if ($seq == 1) {
+            $subSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->get();
+        } else {
+            $subSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $bagian_id)->get();
+        }
+
+
+
+        if ($seq == 1) {
+            $pdf = PDF::loadView('templates.disposition', [
+                'disposition' => $disposition,
+                'subSections' => $subSections
+            ]);
+        } elseif ($seq == 2) {
+            $pdf = PDF::loadView('templates.disposition-kasubag', [
+                'disposition' => $disposition,
+                'subSections' => $subSections
+            ])->setPaper('a4', 'landscape');
+        }
 
         if ($response == 'view') {
             return $pdf->stream();
         } else {
             return $pdf->download('disposisi_surat_masuk-' . $disposition->id . '.pdf');
         }
+    }
+
+    public function disposisi()
+    {
+        $user = JWTAuth::user();
+        $seq = $user->bagian->seq;
+        if ($seq == 1) {
+            $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->get();
+        } else {
+            $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->get();
+        }
+
+        return response()->json([
+            'message' => 'fetched all successfully.',
+            'data' => $subSections
+        ], 200);
     }
 }

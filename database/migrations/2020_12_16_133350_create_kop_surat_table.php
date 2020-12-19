@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateDispositionsTable extends Migration
+class CreateKopSuratTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,9 @@ class CreateDispositionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('dispositions', function (Blueprint $table) {
+        Schema::create('kop_surat', function (Blueprint $table) {
             $table->id();
-            $table->string('disposable_type');
-            $table->string('disposable_id');
-            $table->text('catatan')->nullable();
+            $table->text('path');
             $table->timestamps();
         });
     }
@@ -29,6 +27,6 @@ class CreateDispositionsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('dispositions');
+        Schema::dropIfExists('kop_surat');
     }
 }

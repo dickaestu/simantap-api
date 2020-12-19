@@ -27,8 +27,8 @@ class AddCreatedAtAndUpdatedAtFieldToDispositionsTable extends Migration
     public function down()
     {
         Schema::table('dispositions', function (Blueprint $table) {
-            $table->bigInteger('created_by')->nullable();
-            $table->bigInteger('updated_by')->nullable();
+            $table->dropColumn('created_by');
+            $table->dropColumn('updated_by');
         });
     }
 }

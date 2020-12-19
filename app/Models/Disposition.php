@@ -13,15 +13,16 @@ class Disposition extends Model
         return $this->morphTo();
     }
 
-    public function sector()
+    public function subSector()
     {
-        return $this->belongsTo('App\Models\Bagian', 'kepada');
+        return $this->belongsTo('App\Models\SubBagian', 'kepada');
     }
 
-    public function sections()
-    {
-        return $this->belongsToMany('App\Models\Bagian', 'tembusan', 'disposition_id', 'bagian_id')->withTimestamps();
-    }
+    //Relation to Tembusan
+    // public function sections()
+    // {
+    //     return $this->belongsToMany('App\Models\Bagian', 'tembusan', 'disposition_id', 'bagian_id')->withTimestamps();
+    // }
 
     public function created_by()
     {

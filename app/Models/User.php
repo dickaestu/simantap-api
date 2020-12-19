@@ -17,7 +17,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'roles_id', 'username', 'bagian_id'
+        'name', 'email', 'password', 'roles_id', 'username', 'sub_bagian_id'
     ];
 
     /**
@@ -64,6 +64,6 @@ class User extends Authenticatable implements JWTSubject
     }
     public function bagian()
     {
-        return $this->belongsTo('App\Models\Bagian', 'bagian_id');
+        return $this->belongsTo('App\Models\Bagian', 'sub_bagian_id');
     }
 }

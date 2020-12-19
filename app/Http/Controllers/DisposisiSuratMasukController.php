@@ -20,20 +20,17 @@ class DisposisiSuratMasukController extends Controller
     public function index()
     {
         $user = JWTAuth::user();
-        $dispositions = Disposition::with(['disposable'])->where('disposable_type', 'App\Models\SuratMasuk')
-            ->whereHas('created_by', function ($item) use ($user) {
-                return $item->where('bagian_id', $user->bagian_id);
-            })->get();
+        $dispositions = Disposition::with(['disposable'])->where('kepada', $user->sub_bagian_id)->get();
 
-        $mappingDispositions = $dispositions->map(function ($item) {
-            $item->tembusan = $item->sections()->get();
+        // $mappingDispositions = $dispositions->map(function ($item) {
+        //     $item->tembusan = $item->sections()->get();
 
-            return $item;
-        });
+        //     return $item;
+        // });
 
         return response()->json([
             'message' => 'fetched successfully',
-            'data' => $mappingDispositions
+            'data' => $dispositions
         ], 200);
     }
 

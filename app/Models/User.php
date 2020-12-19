@@ -64,6 +64,6 @@ class User extends Authenticatable implements JWTSubject
     }
     public function bagian()
     {
-        return $this->belongsTo('App\Models\Bagian', 'sub_bagian_id');
+        return $this->belongsTo('App\Models\SubBagian', 'sub_bagian_id');
     }
 }

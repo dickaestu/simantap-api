@@ -29,6 +29,7 @@ Route::group(['prefix' => '/surat-masuk', 'middleware' => 'jwt.auth'], function 
     Route::get('/disposisi/{disposisi}/{response}', 'DisposisiSuratMasukController@tandaTerima');
     Route::get('/disposisi', 'DisposisiSuratMasukController@index');
     Route::post('{surat}/disposisi', 'DisposisiSuratMasukController@store');
+    Route::get('/disposisi/users', 'DisposisiSuratMasukController@disposisi');
     Route::get('/disposisi/{disposisi}', 'DisposisiSuratMasukController@show');
     Route::put('/disposisi/{disposisi}', 'DisposisiSuratMasukController@update');
     Route::delete('/disposisi/{disposisi}', 'DisposisiSuratMasukController@destroy');

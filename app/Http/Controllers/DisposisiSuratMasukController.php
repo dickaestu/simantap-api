@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Disposition;
 use App\Models\SuratMasuk;
+use App\Models\SubBagian;
+
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 use Illuminate\Http\Request;
@@ -65,9 +67,9 @@ class DisposisiSuratMasukController extends Controller
                 'status' => 'disposisi'
             ]);
 
-            if ($tembusan = $request->tembusan) {
-                $disposition->sections()->sync($tembusan);
-            }
+            // if ($tembusan = $request->tembusan) {
+            //     $disposition->sections()->sync($tembusan);
+            // }
 
             $response = [
                 'message' => 'Stored Successfully',
@@ -86,12 +88,19 @@ class DisposisiSuratMasukController extends Controller
      */
     public function show($id)
     {
-        $disposition = Disposition::with('sections')->where('id', $id)->first();
+        $user = JWTAuth::user();
+        $seq = $user->bagian->seq;
+        $disposition = Disposition::where('id', $id)->latest()->first();
 
+        
         if ($disposition) {
+            $allDisposition = Disposition::where('disposable_id', $disposition->disposable_id)->whereHas('subSector', function($query)use($seq){
+                $query->where('seq', '<=', $seq);
+            })->get();
+    
             $response = [
                 'message' => 'fetched Successfully',
-                'data' => $disposition
+                'data' => $allDisposition
             ];
             $status = 200;
         } else {
@@ -134,9 +143,9 @@ class DisposisiSuratMasukController extends Controller
                 'updated_by' => $user->id
             ]);
 
-            if ($tembusan = $request->tembusan) {
-                $disposition->sections()->sync($tembusan);
-            }
+            // if ($tembusan = $request->tembusan) {
+            //     $disposition->sections()->sync($tembusan);
+            // }
 
             $response = [
                 'message' => 'updated Successfully',
@@ -187,5 +196,20 @@ class DisposisiSuratMasukController extends Controller
         } else {
             return $pdf->download('disposisi_surat_masuk-' . $disposition->id . '.pdf');
         }
+    }
+
+    public function disposisi(){
+        $user = JWTAuth::user();
+        $seq = $user->bagian->seq;
+        if($seq == 1){
+            $subSections = SubBagian::select('id','nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->get();
+        } else {
+            $subSections = SubBagian::select('id','nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->get();
+        }
+
+        return response()->json([
+            'message' => 'fetched all successfully.',
+            'data' => $subSections
+        ],200);
     }
 }

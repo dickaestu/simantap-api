@@ -27,7 +27,7 @@
 
     <div style="display: inline-block">
         <div class="header-left" style="border-bottom: 1px solid #000;">
-            <h5 style="margin-bottom: 5px">KEPOLISIAN DAERAH METRO JAYA <br> BIRO SUMBER DAYA MANUSIA</h5>
+            <h5 style="margin-bottom: 5px">BIRO SDM POLDA METRO JAYA  <br> {{ $disposition->subSector->jenis_bagian->nama_bagian }}</h5>
             
         </div>
     </div>
@@ -42,25 +42,18 @@
     <div>
         <table style="width: 100%;  border-collapse: collapse;">
             <tr>
-                <td style="border: none; font-size: 13px">No.Agenda: {{ $disposition->disposable->no_agenda }}</td>
-                <td style="border: none; font-size: 13px">Diterima Tgl: {{ \Carbon\Carbon::create($disposition->disposable->tanggal_terima)->format('d-m-Y') }}</td>
+                <td style="border: none; font-size: 13px">No.Agenda {{ $disposition->subSector->jenis_bagian->nama_bagian }}: {{ $disposition->disposable->no_agenda }}</td>
+                <td style="border: none; font-size: 13px">Diterima Tgl: {{$disposition->created_at->format('d-m-Y') }}</td>
             </tr>
             <tr>
                 <th class="text-center">
-                    CATATAN
+                    CATATAN {{ strtoupper($disposition->user_created_by->bagian->nama) }}
                 </th>
                 <th class="text-center">
                     ISI DISPOSISI
                 </th>
             </tr>
-            <tr>
-                <td style="font-size: 13px;font-weight:bold">
-                    Yth. Karo SDM
-                </td>
-                <td>
-                
-                </td>
-            </tr>
+          
             <tr>
                 <td style="padding: 5px">
                     <table style="width:100%">
@@ -69,16 +62,8 @@
                             <td style="padding-left:0; border:none;  vertical-align:top">:</td>
                             <td style="padding-left:0; border:none;  vertical-align:top">{{ $disposition->disposable->sumber_surat }}</td>
                         </tr>
-                        <tr>
-                            <td style="padding-left:0; border:none;  vertical-align:top">Nomor</td>
-                            <td style="padding-left:0; border:none;  vertical-align:top">:</td>
-                            <td style="padding-left:0; border:none;  vertical-align:top">{{ $disposition->disposable->no_surat }}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding-left:0; border:none;  vertical-align:top">Tanggal</td>
-                            <td style="padding-left:0; border:none;  vertical-align:top">:</td>
-                            <td style="padding-left:0; border:none;  vertical-align:top"> {{ \Carbon\Carbon::create($disposition->disposable->tanggal_surat)->format('d-m-Y') }}</td>
-                        </tr>
+                      
+                       
                         <tr class="">
                             <td style="padding-left:0; border:none; vertical-align:top">Perihal</td>
                             <td style="padding-left:0; border:none; vertical-align:top">:</td>
@@ -86,18 +71,13 @@
                         </tr>
                     </table>
                 </td>
-                <td style="vertical-align: middle; text-align:center" rowspan="4">
+                <td style="vertical-align: middle; text-align:center" rowspan="3">
                   <p>{{ $disposition->isi_disposisi }}</p>
                 </td>
             </tr>
             <tr>
                 <td style="font-size: 13px;font-weight:bold" class="text-center">
-                    DITERUSKAN
-                </td>
-            </tr>
-            <tr>
-                <td  class="">
-                    Kepada Yth:
+                    DITERUSKAN KEPADA
                 </td>
             </tr>
             <tr>

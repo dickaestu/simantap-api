@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddColumnSeqBagianIdKeteranganToRolesTable extends Migration
+class CreateSubBagiansTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,12 @@ class AddColumnSeqBagianIdKeteranganToRolesTable extends Migration
      */
     public function up()
     {
-        Schema::table('roles', function (Blueprint $table) {
+        Schema::create('sub_bagian', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama');
             $table->tinyInteger('seq');
             $table->bigInteger('bagian_id')->unsigned();
-            $table->string('keterangan');
+            $table->timestamps();
         });
     }
 
@@ -27,10 +29,6 @@ class AddColumnSeqBagianIdKeteranganToRolesTable extends Migration
      */
     public function down()
     {
-        Schema::table('roles', function (Blueprint $table) {
-            $table->dropColumn('seq');
-            $table->dropColumn('bagian_id');
-            $table->dropColumn('keterangan');
-        });
+        Schema::dropIfExists('sub_bagian');
     }
 }

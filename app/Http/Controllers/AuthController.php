@@ -67,7 +67,9 @@ class AuthController extends Controller
     {
         return response()->json([
             'user_data' => $user,
-            'role'  => $user->role()->select('role_name')->first(),
+            'role'  => [
+                $user->role()->with('bagian')->select('role_name', 'keterangan', 'bagian_id')->first(),
+            ],
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60

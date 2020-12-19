@@ -91,15 +91,16 @@ class SuratMasukController extends Controller
      *
      * @param  string  $klasifikasi
      * @return \Illuminate\Http\Response
-     */ 
-    function generateAgenda($classification){
+     */
+    function generateAgenda($classification)
+    {
         $code = strtoupper($classification[0]);
         $message = SuratMasuk::where('klasifikasi', $classification)->latest()->first();
-        if($message){
+        if ($message) {
             $explode = explode('-', $message->no_agenda);
-            $no_agenda = $code."-".sprintf('%05d',($explode[1]+1));
+            $no_agenda = $code . "-" . sprintf('%05d', ($explode[1] + 1));
         } else {
-            $no_agenda = $code."-". sprintf('%05d',1);
+            $no_agenda = $code . "-" . sprintf('%05d', 1);
         }
 
         return $no_agenda;
@@ -140,7 +141,6 @@ class SuratMasukController extends Controller
             'perihal' => 'required|string|max:255',
             'file' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
             'keterangan' => 'nullable',
-            'klasifikasi' => 'required'
 
         ]);
 
@@ -160,7 +160,6 @@ class SuratMasukController extends Controller
             }
 
             $message->update([
-                'no_agenda' => $request->no_agenda,
                 'no_surat' => $request->no_surat,
                 'tanggal_surat' => $request->tanggal_surat,
                 'tanggal_terima' => $request->tanggal_terima,
@@ -169,7 +168,6 @@ class SuratMasukController extends Controller
                 'perihal' => $request->perihal,
                 'keterangan' => $request->keterangan,
                 'updated_by' => $user->id,
-                'klasifikasi' => $request->klasifikasi
             ]);
 
             $response = [

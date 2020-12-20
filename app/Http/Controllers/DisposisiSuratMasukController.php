@@ -46,29 +46,22 @@ class DisposisiSuratMasukController extends Controller
     {
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
-        
-        $validator = Validator::make($request->all(), [
-            'kepada'  => 'required|numeric',
-            'catatan' => 'nullable',
-            'isi_disposisi' => 'nullable',
-        ]);
 
-        if ($validator->fails()) {
-            $response = [
-                'message' => 'Error Validation',
-                'errors'  => $validator->messages()
-            ];
-            $status = 422;
-        } else {
+
+        // store untuk diposisi kasubag ke paur
+        if ($seq == 3) {
+            $name_sec = explode(" ", $user->bagian->nama)[1];
+            $paur = SubBagian::where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)
+                ->where('nama', 'kaur ' . $name_sec)->first();
+
             $incomingMessage = SuratMasuk::FindOrFail($suratId);
             $disposition = $incomingMessage->dispositions()->create([
-                'kepada'  => $request->kepada,
-                'catatan' => $request->catatan,
+                'kepada'  => $paur->id,
                 'isi_disposisi' => $request->isi_disposisi,
                 'created_by' => $user->id
             ]);
 
-            $this->createStatus($disposition, $incomingMessage, $request->kepada, $seq, $user);
+            $this->createStatus($disposition, $incomingMessage, $paur->id, $seq, $user);
 
             // if ($tembusan = $request->tembusan) {
             //     $disposition->sections()->sync($tembusan);
@@ -78,25 +71,85 @@ class DisposisiSuratMasukController extends Controller
                 'message' => 'Stored Successfully',
             ];
             $status = 201;
+        } elseif ($seq == 4) {
+            // store untuk diposisi paur ke staff min
+            $name_sec = explode(" ", $user->bagian->nama)[1];
+
+            $staffmin = SubBagian::where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)
+                ->where('nama', 'staffmin ' . $name_sec)->first();
+
+            $incomingMessage = SuratMasuk::FindOrFail($suratId);
+            $disposition = $incomingMessage->dispositions()->create([
+                'kepada'  => $staffmin->id,
+                'catatan' => $request->catatan,
+                'isi_disposisi' => $request->isi_disposisi,
+                'created_by' => $user->id
+            ]);
+
+            $this->createStatus($disposition, $incomingMessage, $staffmin->id, $seq, $user);
+
+            // if ($tembusan = $request->tembusan) {
+            //     $disposition->sections()->sync($tembusan);
+            // }
+
+            $response = [
+                'message' => 'Stored Successfully',
+            ];
+            $status = 201;
+        } else {
+            // store disposisi
+            $validator = Validator::make($request->all(), [
+                'kepada'  => 'required|numeric',
+                'catatan' => 'nullable',
+                'isi_disposisi' => 'nullable',
+            ]);
+
+            if ($validator->fails()) {
+                $response = [
+                    'message' => 'Error Validation',
+                    'errors'  => $validator->messages()
+                ];
+                $status = 422;
+            } else {
+                $incomingMessage = SuratMasuk::FindOrFail($suratId);
+                $disposition = $incomingMessage->dispositions()->create([
+                    'kepada'  => $request->kepada,
+                    'catatan' => $request->catatan,
+                    'isi_disposisi' => $request->isi_disposisi,
+                    'created_by' => $user->id
+                ]);
+
+                $this->createStatus($disposition, $incomingMessage, $request->kepada, $seq, $user);
+
+                // if ($tembusan = $request->tembusan) {
+                //     $disposition->sections()->sync($tembusan);
+                // }
+
+                $response = [
+                    'message' => 'Stored Successfully',
+                ];
+                $status = 201;
+            }
         }
 
         return response()->json($response, $status);
     }
 
-    function createStatus($disposition, $incomingMessage, $kepada, $seq, $user){
+    function createStatus($disposition, $incomingMessage, $kepada, $seq, $user)
+    {
         $subBagian = SubBagian::FindOrFail($kepada);
         $bagian = $user->bagian;
         switch ($seq) {
             case 1:
                 $disposition->history()->create([
-                    'status' => 'Surat di disposisi oleh Karo ke '. $subBagian->nama,
+                    'status' => 'Surat di disposisi oleh Karo ke ' . $subBagian->nama,
                     'surat_masuk_id' => $incomingMessage->id
                 ]);
                 break;
 
             default:
                 $disposition->history()->create([
-                    'status' => $bagian->nama  .'mendisposisikan ke bagian '. $subBagian->nama,
+                    'status' => $bagian->nama  . ' mendisposisikan ke bagian ' . $subBagian->nama,
                     'surat_masuk_id' => $incomingMessage->id
                 ]);
                 break;
@@ -162,7 +215,7 @@ class DisposisiSuratMasukController extends Controller
         } else {
             $disposition = Disposition::FindOrFail($id);
 
-            if($disposition->kepada != $request->kepada){
+            if ($disposition->kepada != $request->kepada) {
                 $this->updateStatus($disposition, $request->kepada, $seq, $user);
             }
             $disposition->update([
@@ -171,7 +224,7 @@ class DisposisiSuratMasukController extends Controller
                 'isi_disposisi' => $request->isi_disposisi,
                 'updated_by' => $user->id
             ]);
-            
+
 
             // if ($tembusan = $request->tembusan) {
             //     $disposition->sections()->sync($tembusan);
@@ -186,19 +239,20 @@ class DisposisiSuratMasukController extends Controller
         return response()->json($response, $status);
     }
 
-    function updateStatus($disposition, $kepada, $seq, $user){
+    function updateStatus($disposition, $kepada, $seq, $user)
+    {
         $subBagian = SubBagian::FindOrFail($kepada);
         $bagian = $user->bagian;
         switch ($seq) {
             case 1:
                 $disposition->history()->update([
-                    'status' => 'Surat di disposisi oleh Karo ke '. $subBagian->nama,
+                    'status' => 'Surat di disposisi oleh Karo ke ' . $subBagian->nama,
                 ]);
                 break;
 
             default:
                 $disposition->history()->update([
-                    'status' => $bagian->nama  .'mendisposisikan ke bagian '. $subBagian->nama,
+                    'status' => $bagian->nama  . 'mendisposisikan ke bagian ' . $subBagian->nama,
                 ]);
                 break;
         }
@@ -246,6 +300,16 @@ class DisposisiSuratMasukController extends Controller
         }
 
 
+        if ($seq == 4) {
+            $kasubag = Disposition::where('disposable_id', $disposition->disposable->id)
+                ->whereHas('subSector', function ($item) use ($seq) {
+                    return $item->where('seq', $seq);
+                })
+                ->first();
+        }
+
+
+
 
         if ($seq == 1) {
             $pdf = PDF::loadView('templates.disposition', [
@@ -257,6 +321,12 @@ class DisposisiSuratMasukController extends Controller
                 'disposition' => $disposition,
                 'subSections' => $subSections
             ])->setPaper('a4', 'landscape');
+        } elseif ($seq == 4) {
+            $pdf = PDF::loadView('templates.disposition-paur', [
+                'disposition' => $disposition,
+                'subSections' => $subSections,
+                'subbag' => explode(" ", $kasubag->user_created_by->bagian->nama)[1]
+            ])->setPaper('a5');
         }
 
         if ($response == 'view') {

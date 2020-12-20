@@ -26,7 +26,7 @@ class AddIsiDisposisiFieldToDispositions extends Migration
     public function down()
     {
         Schema::table('dispositions', function (Blueprint $table) {
-            $table->text('isi_disposisi')->nullable();
+            $table->dropColumn('isi_disposisi');
         });
     }
 }

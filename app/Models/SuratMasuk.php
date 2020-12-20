@@ -36,4 +36,8 @@ class SuratMasuk extends Model
     {
         return $this->belongsTo('App\Models\User', 'updated_by');
     }
+
+    public function history(){
+        return $this->morphOne('App\Models\History', 'historable');
+    }
 }

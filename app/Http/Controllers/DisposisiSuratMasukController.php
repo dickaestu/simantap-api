@@ -45,6 +45,8 @@ class DisposisiSuratMasukController extends Controller
     public function store(Request $request, $suratId)
     {
         $user = JWTAuth::user();
+        $seq = $user->bagian->seq;
+        
         $validator = Validator::make($request->all(), [
             'kepada'  => 'required|numeric',
             'catatan' => 'nullable',
@@ -65,9 +67,8 @@ class DisposisiSuratMasukController extends Controller
                 'isi_disposisi' => $request->isi_disposisi,
                 'created_by' => $user->id
             ]);
-            $incomingMessage->update([
-                'status' => 'disposisi'
-            ]);
+
+            $this->createStatus($disposition, $incomingMessage, $request->kepada, $seq, $user);
 
             // if ($tembusan = $request->tembusan) {
             //     $disposition->sections()->sync($tembusan);
@@ -80,6 +81,26 @@ class DisposisiSuratMasukController extends Controller
         }
 
         return response()->json($response, $status);
+    }
+
+    function createStatus($disposition, $incomingMessage, $kepada, $seq, $user){
+        $subBagian = SubBagian::FindOrFail($kepada);
+        $bagian = $user->bagian;
+        switch ($seq) {
+            case 1:
+                $disposition->history()->create([
+                    'status' => 'Surat di disposisi oleh Karo ke '. $subBagian->nama,
+                    'surat_masuk_id' => $incomingMessage->id
+                ]);
+                break;
+
+            default:
+                $disposition->history()->create([
+                    'status' => $bagian->nama  .'mendisposisikan ke bagian '. $subBagian->nama,
+                    'surat_masuk_id' => $incomingMessage->id
+                ]);
+                break;
+        }
     }
 
     /**
@@ -125,6 +146,7 @@ class DisposisiSuratMasukController extends Controller
     public function update(Request $request, $id)
     {
         $user = JWTAuth::user();
+        $seq = $user->bagian->seq;
         $validator = Validator::make($request->all(), [
             'kepada'  => 'required|numeric',
             'catatan' => 'nullable',
@@ -140,12 +162,16 @@ class DisposisiSuratMasukController extends Controller
         } else {
             $disposition = Disposition::FindOrFail($id);
 
+            if($disposition->kepada != $request->kepada){
+                $this->updateStatus($disposition, $request->kepada, $seq, $user);
+            }
             $disposition->update([
                 'kepada'  => $request->kepada,
                 'catatan' => $request->catatan,
                 'isi_disposisi' => $request->isi_disposisi,
                 'updated_by' => $user->id
             ]);
+            
 
             // if ($tembusan = $request->tembusan) {
             //     $disposition->sections()->sync($tembusan);
@@ -160,6 +186,24 @@ class DisposisiSuratMasukController extends Controller
         return response()->json($response, $status);
     }
 
+    function updateStatus($disposition, $kepada, $seq, $user){
+        $subBagian = SubBagian::FindOrFail($kepada);
+        $bagian = $user->bagian;
+        switch ($seq) {
+            case 1:
+                $disposition->history()->update([
+                    'status' => 'Surat di disposisi oleh Karo ke '. $subBagian->nama,
+                ]);
+                break;
+
+            default:
+                $disposition->history()->update([
+                    'status' => $bagian->nama  .'mendisposisikan ke bagian '. $subBagian->nama,
+                ]);
+                break;
+        }
+    }
+
     /**
      * Remove the specified resource from storage.
      *
@@ -172,6 +216,7 @@ class DisposisiSuratMasukController extends Controller
 
         if ($disposition) {
             // $disposition->sections()->sync([]);
+            $disposition->history()->delete();
             $disposition->delete();
             $response = [
                 'message' => 'deleted Successfully',

@@ -51,6 +51,27 @@ class SubBagianSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now(),
         ],
+        [
+            'nama' => 'staff min ren',
+            'seq' => 3,
+            'bagian_id' => 2,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'nama' => 'staff min mintu',
+            'seq' => 3,
+            'bagian_id' => 2,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'nama' => 'staff min keu',
+            'seq' => 3,
+            'bagian_id' => 2,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
         //Bagian Dalpers
         [
             'nama' => 'kabag dalpers',
@@ -96,6 +117,27 @@ class SubBagianSeeder extends Seeder
         ],
         [
             'nama' => 'kaur pns',
+            'seq' => 4,
+            'bagian_id' => 3,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'nama' => 'staff min diapers',
+            'seq' => 4,
+            'bagian_id' => 3,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'nama' => 'staff min selek',
+            'seq' => 4,
+            'bagian_id' => 3,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'nama' => 'staff min pns',
             'seq' => 4,
             'bagian_id' => 3,
             'created_at' => now(),
@@ -151,6 +193,27 @@ class SubBagianSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now(),
         ],
+        [
+            'nama' => 'staff min pangkat',
+            'seq' => 4,
+            'bagian_id' => 4,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'nama' => 'staff min kompeten',
+            'seq' => 4,
+            'bagian_id' => 4,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'nama' => 'staff min mutjab',
+            'seq' => 4,
+            'bagian_id' => 4,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
         //Bagian Watpers
         [
             'nama' => 'kabag watpers',
@@ -187,6 +250,20 @@ class SubBagianSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now(),
         ],
+        [
+            'nama' => 'staff min rohjashor',
+            'seq' => 4,
+            'bagian_id' => 5,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'nama' => 'staff min khirdinlur',
+            'seq' => 4,
+            'bagian_id' => 5,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
         //Bagian Psi
         [
             'nama' => 'kabag psi',
@@ -218,6 +295,20 @@ class SubBagianSeeder extends Seeder
         ],
         [
             'nama' => 'kaur psipers',
+            'seq' => 4,
+            'bagian_id' => 6,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'nama' => 'staff min psipol',
+            'seq' => 4,
+            'bagian_id' => 6,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'nama' => 'staff min psipers',
             'seq' => 4,
             'bagian_id' => 6,
             'created_at' => now(),

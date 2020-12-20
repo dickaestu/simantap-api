@@ -64,5 +64,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'jwt.auth' => \Tymon\JWTAuth\Http\Middleware\Authenticate::class,
         'is.admin' => \App\Http\Middleware\isAdminMiddleware::class,
+        'is.karo' => \App\Http\Middleware\StoreSuratMasukMiddleware::class,
+        'first.karo' => \App\Http\Middleware\FirstDisposisitionMiddleware::class,
     ];
 }

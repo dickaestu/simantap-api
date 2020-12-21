@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['prefix' => '/surat-masuk'], function () {
+Route::group(['prefix' => '/surat-masuk', 'middleware' => 'jwt.auth'], function () {
     Route::get('/disposisi/{disposisi}/{response}', 'DisposisiSuratMasukController@cetakDisposisi');
     Route::get('/disposisi', 'DisposisiSuratMasukController@index');
     Route::post('{surat}/disposisi', 'DisposisiSuratMasukController@store')->middleware('first.karo');
@@ -79,6 +79,15 @@ Route::resource('/surat-keluar', 'SuratKeluarController')->middleware('jwt.auth'
 
 
 Route::resource('/bagian', 'BagianController')->middleware('jwt.auth')->except('create', 'edit');
+
+
+/*
+|--------------------------------------------------------------------------
+| Staff Min File Routes
+|--------------------------------------------------------------------------
+|
+*/
+Route::post('/staffmin/upload-file/{suratId}', 'StaffMinFileController@store')->middleware('jwt.auth');
 
 /*
 |--------------------------------------------------------------------------

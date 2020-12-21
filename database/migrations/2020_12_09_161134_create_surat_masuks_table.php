@@ -23,7 +23,7 @@ class CreateSuratMasuksTable extends Migration
             $table->string('perihal');
             $table->text('keterangan')->nullable();
             $table->text('file');
-            $table->enum('status', ['manager', 'disposisi'])->default('manager');
+            $table->enum('status', ['belum selesai', 'selesai'])->default('belum selesai');
             $table->timestamps();
         });
     }

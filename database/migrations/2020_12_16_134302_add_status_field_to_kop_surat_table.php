@@ -26,7 +26,7 @@ class AddStatusFieldToKopSuratTable extends Migration
     public function down()
     {
         Schema::table('kop_surat', function (Blueprint $table) {
-            $table->boolean('status')->default(1);
+            $table->dropColumn('status');
         });
     }
 }

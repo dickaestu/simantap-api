@@ -64,7 +64,7 @@ class SuratMasukController extends Controller
 
             $agenda = $this->generateAgenda($request->klasifikasi);
 
-            SuratMasuk::create([
+            $message = SuratMasuk::create([
                 'no_agenda' => $agenda,
                 'no_surat' => $request->no_surat,
                 'tanggal_surat' => $request->tanggal_surat,
@@ -75,6 +75,11 @@ class SuratMasukController extends Controller
                 'keterangan' => $request->keterangan,
                 'created_by' => $user->id,
                 'klasifikasi' => $request->klasifikasi
+            ]);
+
+            $message->history()->create([
+                'status' => 'Surat Masuk dibuat Karo.',
+                'surat_masuk_id' => $message->id
             ]);
 
             $response = [

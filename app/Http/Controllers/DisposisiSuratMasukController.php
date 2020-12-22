@@ -351,7 +351,25 @@ class DisposisiSuratMasukController extends Controller
         if ($seq == 1) {
             $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->get();
         } else {
-            $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->get();
+            if($user->bagian->bagian_id == 2){
+                if($seq == 3) {
+                    $bagian = explode(' ', $user->bagian->nama);
+                    $subSection = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where('nama', 
+                    'like', '%'.$bagian[1])->first();
+                    $subSections = $subSection->users;
+                } else {
+                    $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->get();
+                }
+            } else {
+                if($seq == 4){
+                    $bagian = explode(' ', $user->bagian->nama);
+                    $subSection = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where('nama', 
+                    'like', '%'.$bagian[1])->first();
+                    $subSections = $subSection->users;
+                } else {
+                    $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->get();
+                }
+            }
         }
 
         return response()->json([

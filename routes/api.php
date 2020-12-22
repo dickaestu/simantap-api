@@ -89,6 +89,8 @@ Route::resource('/bagian', 'BagianController')->middleware('jwt.auth')->except('
 */
 Route::post('/staffmin/upload-file/{suratId}', 'StaffMinFileController@store')->middleware('jwt.auth');
 
+
+
 /*
 |--------------------------------------------------------------------------
 | Auth Routes

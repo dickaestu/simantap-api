@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Disposition extends Model
 {
-    protected $fillable = ['catatan', 'kepada', 'isi_disposisi', 'created_by', 'updated_by'];
+    protected $fillable = ['catatan', 'kepada', 'isi_disposisi', 'created_by', 'updated_by', 'user_id'];
 
     public function disposable()
     {
@@ -34,7 +34,13 @@ class Disposition extends Model
         return $this->belongsTo('App\Models\User', 'updated_by');
     }
 
-    public function history(){
+    public function staffmin()
+    {
+        return $this->belongsTo('App\Models\User', 'user_id');
+    }
+
+    public function history()
+    {
         return $this->morphOne('App\Models\History', 'historable');
     }
 }

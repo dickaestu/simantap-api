@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\SubBagian;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class UserController extends Controller
 {
@@ -16,17 +19,25 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
-    }
+        $user = JWTAuth::user();
+        $seq = $user->bagian->seq;
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        if($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4){
+            $bagian = explode(' ', $user->bagian->nama)[1];
+            $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where('nama', 
+            'like', '%'.$bagian)->first();
+
+            $users = User::whereHas('bagian', function($query) use($bagian,$seq){
+                $query->where('nama', 'like', '%'. $bagian)->where('seq', $seq+1);
+            })->get();
+        } else {
+            $users = User::All();
+        }
+
+        return response()->json([
+            'message' => 'fetched all successfully.',
+            'data' => $users
+        ],200);
     }
 
     /**
@@ -37,14 +48,25 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'username' => 'required|string|max:20|unique:users',
-            'password' => 'required|string|min:8',
-            'roles_id' => 'required',
-            'bagian_id' => 'required',
-        ]);
+        $user = JWTAuth::user();
+        $seq = $user->bagian->seq;
+        if($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4){
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'username' => 'required|string|max:20|unique:users',
+                'password' => 'required|string|min:8',
+            ]);
+        } else {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'username' => 'required|string|max:20|unique:users',
+                'password' => 'required|string|min:8',
+                'roles_id' => 'required|numeric',
+                'bagian_id' => 'required|numeric',
+            ]);
+        }
 
         $status = "error";
         $message = "";
@@ -55,19 +77,26 @@ class UserController extends Controller
             $errors = $validator->errors();
             $message = $errors;
         } else {
-            $user = User::create([
+            if($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4){
+                $bagian = explode(' ', $user->bagian->nama)[1];
+                $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where('nama', 
+                'like', '%'.$bagian)->first();
+                $request->roles_id = 4;
+                $request->bagian_id = $staff->id;
+            }
+            $userCreated = User::create([
                 'name' => $request->name,
                 'username' => $request->username,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'roles_id' => $request->roles_id,
-                'bagian_id' => $request->bagian_id,
+                'sub_bagian_id' => $request->bagian_id,
             ]);
-            if ($user) {
+            if ($userCreated) {
                 $status = "success";
                 $message = "register successfully";
-                $data = $user->toArray();
-                $code = 200;
+                $data = $userCreated->toArray();
+                $code = 201;
             } else {
                 $message = 'register failed';
             }
@@ -87,18 +116,12 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        //
-    }
+        $user = User::FindOrFail($id);
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
+        return response()->json([
+            'message' => 'fetched successfully.',
+            'data' => $user
+        ],200);
     }
 
     /**
@@ -110,7 +133,68 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $user = JWTAuth::user();
+        $seq = $user->bagian->seq;
+        $userFind = User::FindOrFail($id);
+        if($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4){
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users,email,' . $userFind->id,
+                'username' => 'required|string|max:20|unique:users,username,' . $userFind->id,
+                'password' => 'required|string|min:8',
+            ]);
+        } else {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users,email,' . $userFind->id,
+                'username' => 'required|string|max:20|unique:users,username,'. $userFind->id,
+                'password' => 'required|string|min:8',
+                'roles_id' => 'required|numeric',
+                'bagian_id' => 'required|numeric',
+            ]);
+        }
+
+        $status = "error";
+        $message = "";
+        $data = null;
+        $code = 400;
+
+        if ($validator->fails()) {
+            $errors = $validator->errors();
+            $message = $errors;
+        } else {
+            if($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4){
+                $bagian = explode(' ', $user->bagian->nama)[1];
+                $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where('nama', 
+                'like', '%'.$bagian)->first();
+                $request->roles_id = 4;
+                $request->bagian_id = $staff->id;
+            }
+            if (!Hash::check($request->password, $user->password)) {
+                $request->password = Hash::make($request->password);
+            }
+            $userFind->update([
+                'name' => $request->name,
+                'username' => $request->username,
+                'email' => $request->email,
+                'password' => $request->password,
+                'roles_id' => $request->roles_id,
+                'sub_bagian_id' => $request->bagian_id,
+            ]);
+            if ($user) {
+                $status = "success";
+                $message = "updated successfully";
+                $data = $userFind->toArray();
+                $code = 200;
+            } else {
+                $message = 'updated failed';
+            }
+        }
+        return response()->json([
+            'status' => $status,
+            'message' => $message,
+            'data' => $data
+        ], $code);
     }
 
     /**
@@ -121,6 +205,10 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $user = User::destroy($id);
+
+        return response()->json([
+            'message' => 'deleted successfully.',
+        ],200);
     }
 }

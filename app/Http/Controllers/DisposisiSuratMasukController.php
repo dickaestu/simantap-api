@@ -22,7 +22,24 @@ class DisposisiSuratMasukController extends Controller
     public function index()
     {
         $user = JWTAuth::user();
-        $dispositions = Disposition::with(['disposable.status_surat'])->where('kepada', $user->sub_bagian_id)->get();
+        $seq = $user->bagian->seq;
+
+        //Check Bagian
+        if ($user->bagian->bagian_id == 2) {
+            //If Staff Min
+            if ($seq == 4) {
+                $dispositions = Disposition::with(['disposable.status_surat'])->where('user_id', $user->id)->where('kepada', $user->sub_bagian_id)->get();
+            } else {
+                $dispositions = Disposition::with(['disposable.status_surat'])->where('kepada', $user->sub_bagian_id)->get();
+            }
+        } else {
+            //IF Staff min
+            if ($seq == 5) {
+                $dispositions = Disposition::with(['disposable.status_surat'])->where('user_id', $user->id)->where('kepada', $user->sub_bagian_id)->get();
+            } else {
+                $dispositions = Disposition::with(['disposable.status_surat'])->where('kepada', $user->sub_bagian_id)->get();
+            }
+        }
 
         // $mappingDispositions = $dispositions->map(function ($item) {
         //     $item->tembusan = $item->sections()->get();
@@ -47,74 +64,96 @@ class DisposisiSuratMasukController extends Controller
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
 
+        $incomingMessage = SuratMasuk::FindOrFail($suratId);
 
-        // store untuk diposisi kasubag ke paur
-        if ($seq == 3) {
-            $name_sec = explode(" ", $user->bagian->nama)[1];
-            $paur = SubBagian::where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)
-                ->where('nama', 'kaur ' . $name_sec)->first();
-
-            $incomingMessage = SuratMasuk::FindOrFail($suratId);
-            $disposition = $incomingMessage->dispositions()->create([
-                'kepada'  => $paur->id,
-                'isi_disposisi' => $request->isi_disposisi,
-                'created_by' => $user->id
-            ]);
-            $incomingMessage->update(['status' => 4]);
-
-            $this->createStatus($disposition, $incomingMessage, $paur->id, $seq, $user);
-
-            // if ($tembusan = $request->tembusan) {
-            //     $disposition->sections()->sync($tembusan);
-            // }
-
-            $response = [
-                'message' => 'Stored Successfully',
-            ];
-            $status = 201;
-        } elseif ($seq == 4) {
-            // store untuk diposisi paur ke staff min
-            $name_sec = explode(" ", $user->bagian->nama)[1];
-
-            $staffmin = SubBagian::where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)
-                ->where('nama', 'staffmin ' . $name_sec)->first();
-
-            $incomingMessage = SuratMasuk::FindOrFail($suratId);
-
-            $disposition = $incomingMessage->dispositions()->create([
-                'kepada'  => $staffmin->id,
-                'catatan' => $request->catatan,
-                'isi_disposisi' => $request->isi_disposisi,
-                'created_by' => $user->id
-            ]);
-
-            $this->createStatus($disposition, $incomingMessage, $staffmin->id, $seq, $user);
-
-            // if ($tembusan = $request->tembusan) {
-            //     $disposition->sections()->sync($tembusan);
-            // }
-
-            $response = [
-                'message' => 'Stored Successfully',
-            ];
-            $status = 201;
-        } else {
-            // store disposisi
+        if ($seq != 3) {
             $validator = Validator::make($request->all(), [
                 'kepada'  => 'required|numeric',
                 'catatan' => 'nullable',
                 'isi_disposisi' => 'nullable',
             ]);
+        } else {
+            $validator = Validator::make($request->all(), [
 
-            if ($validator->fails()) {
-                $response = [
-                    'message' => 'Error Validation',
-                    'errors'  => $validator->messages()
-                ];
-                $status = 422;
+                'isi_disposisi' => 'nullable',
+            ]);
+        }
+
+        if ($validator->fails()) {
+            $response = [
+                'message' => 'Error Validation',
+                'errors'  => $validator->messages()
+            ];
+            $status = 422;
+        } else {
+            $response = null;
+            $status = null;
+
+
+            if ($seq == 3) {
+
+                //bagian Subagrenmin
+                if ($user->bagian->bagian_id == 2) {
+                    $bagian = explode(' ', $user->bagian->nama);
+
+                    $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
+                        'nama',
+                        'like',
+                        '%' . $bagian[1]
+                    )->first();
+
+                    $disposition = $incomingMessage->dispositions()->create([
+                        'kepada'  => $staff->id,
+                        'catatan' => $request->catatan ?? null,
+                        'isi_disposisi' => $request->isi_disposisi,
+                        'created_by' => $user->id
+                    ]);
+
+                    $incomingMessage->update(['status' => 4]);
+
+                    $this->createStatus($disposition, $incomingMessage, $staff->id, $seq, $user);
+                }
+                // store untuk diposisi kasubag ke paur 
+                else {
+
+                    $name_sec = explode(" ", $user->bagian->nama)[1];
+                    $paur = SubBagian::where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)
+                        ->where(
+                            'nama',
+                            'like',
+                            '%' . $name_sec
+                        )->first();
+
+                    $disposition = $incomingMessage->dispositions()->create([
+                        'kepada'  => $paur->id,
+                        'isi_disposisi' => $request->isi_disposisi,
+                        'catatan' => $request->catatan ?? null,
+                        'created_by' => $user->id
+                    ]);
+                    $incomingMessage->update(['status' => 4]);
+
+                    $this->createStatus($disposition, $incomingMessage, $paur->id, $seq, $user);
+                }
+            } else if ($seq == 4) {
+                // store untuk diposisi paur ke staff min
+
+                $name_sec = explode(" ", $user->bagian->nama)[1];
+
+                $staffmin = SubBagian::where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)
+                    ->where('nama', 'staff min ' . $name_sec)->first();
+
+                $disposition = $incomingMessage->dispositions()->create([
+                    'kepada'  => $staffmin->id,
+                    'catatan' => $request->catatan,
+                    'isi_disposisi' => $request->isi_disposisi,
+                    'user_id' => $request->kepada,
+                    'created_by' => $user->id
+                ]);
+
+                $incomingMessage->update(['status' => 5]);
+
+                $this->createStatus($disposition, $incomingMessage, $staffmin->id, $seq, $user);
             } else {
-                $incomingMessage = SuratMasuk::FindOrFail($suratId);
-
                 if ($seq == 1) {
                     $incomingMessage->update(['status' => 2]);
                 } elseif ($seq == 2) {
@@ -138,6 +177,11 @@ class DisposisiSuratMasukController extends Controller
                 ];
                 $status = 201;
             }
+        }
+
+        if (!$response && !$status) {
+            $response = ['message' => 'stored successfully'];
+            $status = 201;
         }
 
         return response()->json($response, $status);
@@ -348,10 +392,41 @@ class DisposisiSuratMasukController extends Controller
     {
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
+
+        //Jika karo
         if ($seq == 1) {
             $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->get();
         } else {
-            $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->get();
+
+            //Jika merupakan subbagrenmin
+            if ($user->bagian->bagian_id == 2) {
+
+                //Jika merupakan kaur subbagrenmin
+                if ($seq == 4) {
+                    $bagian = explode(' ', $user->bagian->nama);
+                    $subSection = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
+                        'nama',
+                        'like',
+                        '%' . $bagian[1]
+                    )->first();
+                    $subSections = $subSection->users;
+                } else {
+                    $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->get();
+                }
+            } else {
+                //jika merupakan kaur dari bagian lain
+                if ($seq == 4) {
+                    $bagian = explode(' ', $user->bagian->nama);
+                    $subSection = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
+                        'nama',
+                        'like',
+                        '%' . $bagian[1]
+                    )->first();
+                    $subSections = $subSection->users;
+                } else {
+                    $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->get();
+                }
+            }
         }
 
         return response()->json([

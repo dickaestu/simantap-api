@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => '/surat-masuk', 'middleware' => 'jwt.auth'], function () {
     Route::get('/disposisi/{disposisi}/{response}', 'DisposisiSuratMasukController@cetakDisposisi');
     Route::get('/disposisi', 'DisposisiSuratMasukController@index');
-    Route::post('{surat}/disposisi', 'DisposisiSuratMasukController@store')->middleware('first.karo');
+    Route::post('{surat}/disposisi', 'DisposisiSuratMasukController@store');
     Route::get('/disposisi/users', 'DisposisiSuratMasukController@disposisi');
     Route::get('/disposisi/{disposisi}', 'DisposisiSuratMasukController@show');
     Route::put('/disposisi/{disposisi}', 'DisposisiSuratMasukController@update');
@@ -58,7 +58,7 @@ Route::group(['prefix' => '/surat-keluar', 'middleware' => 'jwt.auth'], function
 Route::get('/surat-masuk/{surat_masuk}/detail-surat/{response}', 'SuratMasukController@detailSurat')->middleware('jwt.auth');
 Route::get('/surat-masuk/{surat_masuk}/tanda-terima/{response}', 'SuratMasukController@tandaTerima')->middleware('jwt.auth');
 Route::resource('/surat-masuk', 'SuratMasukController')->middleware('jwt.auth')->except('store', 'create', 'edit');
-Route::post('/surat-masuk', 'SuratMasukController@store')->middleware(['jwt.auth', 'is.karo']);
+Route::post('/surat-masuk', 'SuratMasukController@store')->middleware(['jwt.auth');
 
 /*
 |--------------------------------------------------------------------------

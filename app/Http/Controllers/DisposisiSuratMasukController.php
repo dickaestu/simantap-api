@@ -22,7 +22,7 @@ class DisposisiSuratMasukController extends Controller
     public function index()
     {
         $user = JWTAuth::user();
-        $dispositions = Disposition::with(['disposable'])->where('kepada', $user->sub_bagian_id)->get();
+        $dispositions = Disposition::with(['disposable.status_surat'])->where('kepada', $user->sub_bagian_id)->get();
 
         // $mappingDispositions = $dispositions->map(function ($item) {
         //     $item->tembusan = $item->sections()->get();

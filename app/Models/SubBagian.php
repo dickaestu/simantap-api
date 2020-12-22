@@ -8,7 +8,7 @@ class SubBagian extends Model
 {
     protected $table = 'sub_bagian';
     protected $fillable = [
-        'nama', 'seq', 'bagian_id'
+        'nama', 'seq', 'bagian_id', 'status_bagian'
     ];
 
     public function jenis_bagian()

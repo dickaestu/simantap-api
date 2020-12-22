@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Disposition extends Model
 {
-    protected $fillable = ['catatan', 'kepada', 'isi_disposisi', 'created_by', 'updated_by'];
+    protected $fillable = ['catatan', 'kepada', 'isi_disposisi', 'created_by', 'updated_by', 'user_id'];
 
     public function disposable()
     {

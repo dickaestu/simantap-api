@@ -80,7 +80,8 @@ class SuratMasukController extends Controller
                 'file' => $fileName,
                 'keterangan' => $request->keterangan,
                 'created_by' => $user->id,
-                'klasifikasi' => $request->klasifikasi
+                'klasifikasi' => $request->klasifikasi,
+                'status' => 1
             ]);
 
             $message->history()->create([

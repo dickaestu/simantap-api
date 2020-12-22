@@ -60,6 +60,7 @@ class DisposisiSuratMasukController extends Controller
                 'isi_disposisi' => $request->isi_disposisi,
                 'created_by' => $user->id
             ]);
+            $incomingMessage->update(['status'=>'1']);
 
             $this->createStatus($disposition, $incomingMessage, $paur->id, $seq, $user);
 

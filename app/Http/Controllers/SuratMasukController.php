@@ -23,6 +23,12 @@ class SuratMasukController extends Controller
     {
         $incomingMessages = SuratMasuk::with(['created_by', 'updated_by'])->orderBy('created_at', 'desc')->get();
 
+
+        $mappingIncomingMessages = $incomingMessages->map(function ($item) {
+            $item->file_path = 'https://api.simantap.ngampooz.com/public/files/surat_masuk/' . $item->file;
+            return $item;
+        });
+
         return response()->json([
             'message' => 'fetched successfully',
             'data' => $incomingMessages

@@ -54,7 +54,7 @@
                         <tr>
                             <td style="border: none; width:50%; border-right: 1px solid black">
                             <p>Kepada Yth:</p>
-                            <p>{{ $disposition->catatan }}</p>
+                            <p>{{ $disposition->staffmin->name }}</p>
                             </td>
                             <td style="border: none; width:50%">{{ $disposition->isi_disposisi }}</td>
                         </tr>

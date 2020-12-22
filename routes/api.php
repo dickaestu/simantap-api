@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 */
+
 Route::resource('/paur/user', 'UserController')->middleware(['jwt.auth', 'beyond.paur'])->except('create', 'edit');
 
 /*

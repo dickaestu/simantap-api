@@ -27,6 +27,11 @@ class SuratMasuk extends Model
         return $this->morphOne('App\Models\Disposition', 'disposable');
     }
 
+    public function status_surat()
+    {
+        return $this->belongsTo('App\Models\StatusSurat', 'status');
+    }
+
     public function created_by()
     {
         return $this->belongsTo('App\Models\User', 'created_by');
@@ -37,7 +42,8 @@ class SuratMasuk extends Model
         return $this->belongsTo('App\Models\User', 'updated_by');
     }
 
-    public function history(){
+    public function history()
+    {
         return $this->morphOne('App\Models\History', 'historable');
     }
 }

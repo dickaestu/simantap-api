@@ -21,7 +21,7 @@ class SuratMasukController extends Controller
      */
     public function index()
     {
-        $incomingMessages = SuratMasuk::with(['created_by', 'updated_by'])->orderBy('created_at', 'desc')->get();
+        $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])->orderBy('created_at', 'desc')->get();
 
 
         $mappingIncomingMessages = $incomingMessages->map(function ($item) {
@@ -80,7 +80,8 @@ class SuratMasukController extends Controller
                 'file' => $fileName,
                 'keterangan' => $request->keterangan,
                 'created_by' => $user->id,
-                'klasifikasi' => $request->klasifikasi
+                'klasifikasi' => $request->klasifikasi,
+                'status' => 1
             ]);
 
             $message->history()->create([

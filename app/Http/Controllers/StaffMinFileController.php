@@ -41,7 +41,7 @@ class StaffMinFileController extends Controller
             ]);
             if ($staffmin_file) {
                 $staffmin_file->surat_masuk->update([
-                    'status' => '2'
+                    'status' => 6
                 ]);
                 $status = "success";
                 $message = "Data berhasil dibuat";

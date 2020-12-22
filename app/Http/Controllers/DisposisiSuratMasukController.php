@@ -22,7 +22,7 @@ class DisposisiSuratMasukController extends Controller
     public function index()
     {
         $user = JWTAuth::user();
-        $dispositions = Disposition::with(['disposable'])->where('kepada', $user->sub_bagian_id)->get();
+        $dispositions = Disposition::with(['disposable.status_surat'])->where('kepada', $user->sub_bagian_id)->get();
 
         // $mappingDispositions = $dispositions->map(function ($item) {
         //     $item->tembusan = $item->sections()->get();
@@ -60,7 +60,7 @@ class DisposisiSuratMasukController extends Controller
                 'isi_disposisi' => $request->isi_disposisi,
                 'created_by' => $user->id
             ]);
-            $incomingMessage->update(['status'=>'1']);
+            $incomingMessage->update(['status' => 4]);
 
             $this->createStatus($disposition, $incomingMessage, $paur->id, $seq, $user);
 
@@ -80,6 +80,7 @@ class DisposisiSuratMasukController extends Controller
                 ->where('nama', 'staffmin ' . $name_sec)->first();
 
             $incomingMessage = SuratMasuk::FindOrFail($suratId);
+
             $disposition = $incomingMessage->dispositions()->create([
                 'kepada'  => $staffmin->id,
                 'catatan' => $request->catatan,
@@ -113,6 +114,12 @@ class DisposisiSuratMasukController extends Controller
                 $status = 422;
             } else {
                 $incomingMessage = SuratMasuk::FindOrFail($suratId);
+
+                if ($seq == 1) {
+                    $incomingMessage->update(['status' => 2]);
+                } elseif ($seq == 2) {
+                    $incomingMessage->update(['status' => 3]);
+                }
                 $disposition = $incomingMessage->dispositions()->create([
                     'kepada'  => $request->kepada,
                     'catatan' => $request->catatan,

@@ -4,11 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class KopSurat extends Model
+class StatusSurat extends Model
 {
-    protected $table = 'bagian';
-
+    protected $table = 'status_surat';
     protected $fillable = [
-        'path', 'status'
+        'status'
     ];
 }

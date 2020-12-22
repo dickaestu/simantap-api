@@ -92,9 +92,10 @@ class DisposisiSuratMasukController extends Controller
 
             if ($seq == 3) {
 
-                //bagian Paur dari subbagrenmin ke staff min
+                //bagian Subagrenmin
                 if ($user->bagian->bagian_id == 2) {
                     $bagian = explode(' ', $user->bagian->nama);
+
                     $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
                         'nama',
                         'like',
@@ -103,13 +104,12 @@ class DisposisiSuratMasukController extends Controller
 
                     $disposition = $incomingMessage->dispositions()->create([
                         'kepada'  => $staff->id,
-                        'user_id' => $request->kepada,
                         'catatan' => $request->catatan ?? null,
                         'isi_disposisi' => $request->isi_disposisi,
                         'created_by' => $user->id
                     ]);
 
-                    $incomingMessage->update(['status' => 5]);
+                    $incomingMessage->update(['status' => 4]);
 
                     $this->createStatus($disposition, $incomingMessage, $staff->id, $seq, $user);
                 }
@@ -118,7 +118,11 @@ class DisposisiSuratMasukController extends Controller
 
                     $name_sec = explode(" ", $user->bagian->nama)[1];
                     $paur = SubBagian::where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)
-                        ->where('nama', 'kaur ' . $name_sec)->first();
+                        ->where(
+                            'nama',
+                            'like',
+                            '%' . $name_sec
+                        )->first();
 
                     $disposition = $incomingMessage->dispositions()->create([
                         'kepada'  => $paur->id,
@@ -132,24 +136,23 @@ class DisposisiSuratMasukController extends Controller
                 }
             } else if ($seq == 4) {
                 // store untuk diposisi paur ke staff min
-                if ($user->bagian->bagian_id != 2) {
-                    $name_sec = explode(" ", $user->bagian->nama)[1];
 
-                    $staffmin = SubBagian::where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)
-                        ->where('nama', 'staff min ' . $name_sec)->first();
+                $name_sec = explode(" ", $user->bagian->nama)[1];
 
-                    $disposition = $incomingMessage->dispositions()->create([
-                        'kepada'  => $staffmin->id,
-                        'catatan' => $request->catatan,
-                        'isi_disposisi' => $request->isi_disposisi,
-                        'user_id' => $request->kepada,
-                        'created_by' => $user->id
-                    ]);
+                $staffmin = SubBagian::where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)
+                    ->where('nama', 'staff min ' . $name_sec)->first();
 
-                    $incomingMessage->update(['status' => 5]);
+                $disposition = $incomingMessage->dispositions()->create([
+                    'kepada'  => $staffmin->id,
+                    'catatan' => $request->catatan,
+                    'isi_disposisi' => $request->isi_disposisi,
+                    'user_id' => $request->kepada,
+                    'created_by' => $user->id
+                ]);
 
-                    $this->createStatus($disposition, $incomingMessage, $staffmin->id, $seq, $user);
-                }
+                $incomingMessage->update(['status' => 5]);
+
+                $this->createStatus($disposition, $incomingMessage, $staffmin->id, $seq, $user);
             } else {
                 if ($seq == 1) {
                     $incomingMessage->update(['status' => 2]);
@@ -399,7 +402,7 @@ class DisposisiSuratMasukController extends Controller
             if ($user->bagian->bagian_id == 2) {
 
                 //Jika merupakan kaur subbagrenmin
-                if ($seq == 3) {
+                if ($seq == 4) {
                     $bagian = explode(' ', $user->bagian->nama);
                     $subSection = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
                         'nama',

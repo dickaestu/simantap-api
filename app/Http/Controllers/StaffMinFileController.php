@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Disposition;
 use App\Models\StaffminFile;
+use App\Models\SubBagian;
 use App\Models\SuratMasuk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -38,6 +40,13 @@ class StaffMinFileController extends Controller
                 'catatan' => $request->catatan,
                 'file' => $fileName,
                 'created_by' => $user->id
+            ]);
+
+            $disposition = Disposition::where('disposable_id', $id)->first();
+
+            $disposition->history()->create([
+                'status' => $user->name  . ' telah mengupload hasil kerjaan',
+                'surat_masuk_id' => $id
             ]);
             if ($staffmin_file) {
                 $staffmin_file->surat_masuk->update([

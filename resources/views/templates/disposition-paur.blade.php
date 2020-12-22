@@ -28,9 +28,16 @@
 
     <div>
         <table style="width: 100%;  border-collapse: collapse;">
+            @if ($disposition->subSector->bagian_id == 2)
+            <tr>
+                <th colspan="2" style="text-align: center">SUBBAG RENMIN </th>
+            </tr>
+            @else 
             <tr>
                 <th colspan="2" style="text-align: center">SUBBAG {{ strtoupper($subbag) }}</th>
             </tr>
+            @endif
+          
             <tr>
                 <th>NO. AGENDA BINKAR</th>
                 <td>{{ $disposition->disposable->no_agenda }}</td>

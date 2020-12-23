@@ -440,7 +440,7 @@ class DisposisiSuratMasukController extends Controller
     {
         $user = JWTAuth::user();
 
-        $data = History::where('surat_masuk_id', $suratId)->orderBy('created_at', 'desc')->get();
+        $data = History::with(['historable'])->where('surat_masuk_id', $suratId)->orderBy('created_at', 'asc')->get();
 
         return response()->json([
             'status' => 'Success',

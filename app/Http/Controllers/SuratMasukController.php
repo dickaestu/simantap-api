@@ -11,6 +11,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use PDF;
 
 use App\Models\SuratMasuk;
+use Carbon\Carbon;
 
 class SuratMasukController extends Controller
 {
@@ -19,9 +20,160 @@ class SuratMasukController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])->orderBy('created_at', 'desc')->get();
+        if ($request->keyword) {
+            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+
+                ->where(
+                    'no_surat',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'no_agenda',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'sumber_surat',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'perihal',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'klasifikasi',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orderBy('created_at', 'desc')->get();
+        } else if ($request->start_date && $request->end_date) {
+            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+
+                ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
+                ->orderBy('created_at', 'desc')->get();
+        } else if ($request->keyword && $request->start_date && $request->end_date) {
+            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+
+                ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
+                ->where(
+                    'no_surat',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'no_agenda',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'sumber_surat',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'perihal',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'klasifikasi',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orderBy('created_at', 'desc')->get();
+        } else {
+            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+
+                ->orderBy('created_at', 'desc')->get();
+        }
+
+        $mappingIncomingMessages = $incomingMessages->map(function ($item) {
+            $item->file_path = 'https://api.simantap.ngampooz.com/public/files/surat_masuk/' . $item->file;
+            return $item;
+        });
+
+        return response()->json([
+            'message' => 'fetched successfully',
+            'data' => $incomingMessages
+        ], 200);
+    }
+
+    public function suratMasukSuccess(Request $request)
+    {
+        if ($request->keyword) {
+            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                ->where('status', 6)
+                ->where(
+                    'no_surat',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'no_agenda',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'sumber_surat',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'perihal',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'klasifikasi',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orderBy('created_at', 'desc')->get();
+        } else if ($request->start_date && $request->end_date) {
+            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                ->where('status', 6)
+                ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
+                ->orderBy('created_at', 'desc')->get();
+        } else if ($request->keyword && $request->start_date && $request->end_date) {
+            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                ->where('status', 6)
+                ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
+                ->where(
+                    'no_surat',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'no_agenda',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'sumber_surat',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'perihal',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'klasifikasi',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orderBy('created_at', 'desc')->get();
+        } else {
+            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                ->where('status', 6)
+                ->orderBy('created_at', 'desc')->get();
+        }
 
 
         $mappingIncomingMessages = $incomingMessages->map(function ($item) {

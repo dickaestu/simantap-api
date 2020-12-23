@@ -35,6 +35,7 @@ Route::resource('/paur/user', 'UserController')->middleware(['jwt.auth', 'beyond
 
 Route::group(['prefix' => '/surat-masuk', 'middleware' => 'jwt.auth'], function () {
     Route::get('/disposisi/{disposisi}/{response}', 'DisposisiSuratMasukController@cetakDisposisi');
+    Route::get('/history/{surat}', 'DisposisiSuratMasukController@history');
     Route::get('/disposisi', 'DisposisiSuratMasukController@index');
     Route::post('{surat}/disposisi', 'DisposisiSuratMasukController@store');
     Route::get('/disposisi/users', 'DisposisiSuratMasukController@disposisi');

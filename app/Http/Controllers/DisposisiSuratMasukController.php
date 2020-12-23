@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Disposition;
+use App\Models\History;
 use App\Models\SuratMasuk;
 use App\Models\SubBagian;
 
@@ -432,6 +433,18 @@ class DisposisiSuratMasukController extends Controller
         return response()->json([
             'message' => 'fetched all successfully.',
             'data' => $subSections
+        ], 200);
+    }
+
+    public function history($suratId)
+    {
+        $user = JWTAuth::user();
+
+        $data = History::where('surat_masuk_id', $suratId)->orderBy('created_at', 'desc')->get();
+
+        return response()->json([
+            'status' => 'Success',
+            'data' => $data
         ], 200);
     }
 }

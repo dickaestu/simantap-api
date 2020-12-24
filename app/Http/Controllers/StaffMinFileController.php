@@ -42,9 +42,7 @@ class StaffMinFileController extends Controller
                 'created_by' => $user->id
             ]);
 
-            $disposition = Disposition::where('disposable_id', $id)->first();
-
-            $disposition->history()->create([
+            $staffmin_file->history()->create([
                 'status' => $user->name  . ' telah mengupload hasil kerjaan',
                 'surat_masuk_id' => $id
             ]);

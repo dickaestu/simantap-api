@@ -533,17 +533,17 @@ class DisposisiSuratMasukController extends Controller
 
         $data = History::with(['historable'])->where('surat_masuk_id', $suratId)->orderBy('created_at', 'asc')->get();
 
-        $mappingData = $data->map(function($item){
-            switch($item->historable_type){
-                case "App\Models\SuratMasuk" :
+        $mappingData = $data->map(function ($item) {
+            switch ($item->historable_type) {
+                case "App\Models\SuratMasuk":
                     $item->url = public_path() . "/files/surat_masuk/" . $item->historable->file;
                     break;
-                case "App\Models\Disposition" :
+                case "App\Models\Disposition":
                     $item->url = null;
-                    break;   
-                case "App\Models\StaffminFile" :
+                    break;
+                case "App\Models\StaffMinFile":
                     $item->url = public_path() . "/files/surat_masuk/" . $item->historable->file;
-                    break;  
+                    break;
             }
             return $item;
         });

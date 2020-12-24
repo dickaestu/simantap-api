@@ -122,7 +122,7 @@ class DisposisiSuratMasukController extends Controller
         }
 
         $mappingDisposition = $dispositions->map(function ($item) {
-            $item->disposable->file_path = 'https://api.simantap.ngampooz.com/files/surat_masuk/' . $item->disposable->file;
+            $item->disposable->file_path = public_path() . "/files/surat_masuk/" . $item->disposable->file;
             return $item;
         });
 
@@ -542,7 +542,7 @@ class DisposisiSuratMasukController extends Controller
                     $item->url = null;
                     break;
                 case "App\Models\StaffMinFile":
-                    $item->url = public_path() . "/files/surat_masuk/" . $item->historable->file;
+                    $item->url = public_path() . "/files/staff_min/" . $item->historable->file;
                     break;
             }
             return $item;

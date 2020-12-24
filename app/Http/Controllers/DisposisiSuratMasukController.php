@@ -541,7 +541,7 @@ class DisposisiSuratMasukController extends Controller
                 case "App\Models\Disposition":
                     $item->url = null;
                     break;
-                case "App\Models\StaffMinFile":
+                case "App\Models\StaffminFile":
                     $item->url = public_path() . "/files/staff_min/" . $item->historable->file;
                     break;
             }

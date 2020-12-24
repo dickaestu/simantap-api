@@ -93,7 +93,8 @@ class SuratMasukController extends Controller
         }
 
         $mappingIncomingMessages = $incomingMessages->map(function ($item) {
-            $item->file_path = public_path() . "/files/surat_masuk/"  . $item->file;
+            $item->file_path =
+                'https://api.simantap.ngampooz.com/files/surat_masuk/' . $item->file;
             return $item;
         });
 
@@ -177,7 +178,8 @@ class SuratMasukController extends Controller
 
 
         $mappingIncomingMessages = $incomingMessages->map(function ($item) {
-            $item->file_path = public_path() . "/files/surat_masuk/" . $item->file;
+            $item->file_path =
+                'https://api.simantap.ngampooz.com/files/surat_masuk/' . $item->file;
             return $item;
         });
 

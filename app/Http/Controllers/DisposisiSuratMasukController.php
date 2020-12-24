@@ -454,11 +454,12 @@ class DisposisiSuratMasukController extends Controller
                     $item->url = public_path() . "/files/surat_masuk/" . $item->historable->file;
                     break;  
             }
+            return $item;
         });
 
         return response()->json([
             'status' => 'Success',
-            'data' => $data
+            'data' => $mappingData
         ], 200);
     }
 }

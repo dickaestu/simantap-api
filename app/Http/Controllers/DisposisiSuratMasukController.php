@@ -438,15 +438,13 @@ class DisposisiSuratMasukController extends Controller
         if ($seq == 1) {
             $subSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->get();
         } else {
-            $subSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $bagian_id)->get();
+            $subSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)
+                ->where('bagian_id', $bagian_id)->get();
         }
 
         if ($seq == 4) {
-            $kasubag = Disposition::where('disposable_id', $disposition->disposable->id)
-                ->whereHas('subSector', function ($item) use ($seq) {
-                    return $item->where('seq', $seq);
-                })
-                ->first();
+            $subbag_disposition = Disposition::where('disposable_id', $disposition->disposable_id)
+                ->where('catatan', null)->first();
         }
 
         if ($seq == 1) {
@@ -455,21 +453,59 @@ class DisposisiSuratMasukController extends Controller
                 'subSections' => $subSections
             ]);
         } elseif ($seq == 2) {
+            $kabag = Disposition::where('disposable_id', $disposition->disposable_id)
+                ->whereHas('subSector', function ($item) use ($seq) {
+                    return $item->where('seq', $seq);
+                })->first();
+            $kabagSubSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $kabag->user_created_by->bagian->seq + 1)->get();
             $pdf = PDF::loadView('templates.disposition-kasubag', [
                 'disposition' => $disposition,
-                'subSections' => $subSections
-            ])->setPaper('a4', 'landscape');
+                'subSections' => $subSections,
+                'kabagSubSections' => $kabagSubSections,
+                'kabag' => $kabag
+            ]);
         } elseif ($seq == 3) {
+            $kabag = Disposition::where('disposable_id', $disposition->disposable_id)
+                ->whereHas('subSector', function ($item) use ($seq) {
+                    return $item->where('seq', $seq - 1);
+                })->first();
+            $kasubag = Disposition::where('disposable_id', $disposition->disposable_id)
+                ->whereHas('subSector', function ($item) use ($seq) {
+                    return $item->where('seq', $seq);
+                })->first();
+            $kabagSubSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $kabag->user_created_by->bagian->seq + 1)->get();
+            $kasubagSubSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $kasubag->user_created_by->bagian->seq + 1)
+                ->where('bagian_id', $kasubag->subSector->bagian_id)->get();
             $pdf = PDF::loadView('templates.disposition-kaur', [
                 'disposition' => $disposition,
                 'subSections' => $subSections,
-            ])->setPaper('a5');
+                'kabagSubSections' => $kabagSubSections,
+                'kabag' => $kabag,
+                'kasubagSubSections' => $kasubagSubSections,
+                'kasubag' => $kasubag
+            ]);
         } elseif ($seq == 4) {
+            $kabag = Disposition::where('disposable_id', $disposition->disposable_id)
+                ->whereHas('subSector', function ($item) use ($seq) {
+                    return $item->where('seq', $seq - 2);
+                })->first();
+            $kasubag = Disposition::where('disposable_id', $disposition->disposable_id)
+                ->whereHas('subSector', function ($item) use ($seq) {
+                    return $item->where('seq', $seq - 1);
+                })->first();
+            $kabagSubSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $kabag->user_created_by->bagian->seq + 1)->get();
+            $kasubagSubSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $kasubag->user_created_by->bagian->seq + 1)
+                ->where('bagian_id', $kasubag->subSector->bagian_id)->get();
             $pdf = PDF::loadView('templates.disposition-staffmin', [
                 'disposition' => $disposition,
                 'subSections' => $subSections,
+                'subbag_disposition' => $subbag_disposition,
+                'kabagSubSections' => $kabagSubSections,
+                'kabag' => $kabag,
+                'kasubagSubSections' => $kasubagSubSections,
+                'kasubag' => $kasubag
                 // 'subbag' => explode(" ", $kasubag->user_created_by->bagian->nama)[1]
-            ])->setPaper('a5');
+            ]);
         }
 
         if ($response == 'view') {

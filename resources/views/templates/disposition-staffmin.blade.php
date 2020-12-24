@@ -34,7 +34,7 @@
             </tr>
             @else 
             <tr>
-                <th colspan="2" style="text-align: center">SUBBAG {{ strtoupper($subbag) }}</th>
+                <th colspan="2" style="text-align: center">SUBBAG</th>
             </tr>
             @endif
           

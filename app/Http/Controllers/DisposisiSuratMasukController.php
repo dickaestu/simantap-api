@@ -20,27 +20,115 @@ class DisposisiSuratMasukController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
 
         //Check Bagian
-        if ($user->bagian->bagian_id == 2) {
-            //If Staff Min
-            if ($seq == 4) {
-                $dispositions = Disposition::with(['disposable.status_surat'])->where('user_id', $user->id)->where('kepada', $user->sub_bagian_id)->get();
+
+        if ($request->keyword) {
+            if ($seq == 1) {
+                $dispositions = Disposition::with(['disposable.status_surat'])
+                    ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
+                        return $item->where(
+                            'no_surat',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )->orWhere(
+                            'no_agenda',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )->orWhere(
+                            'sumber_surat',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )->orWhere(
+                            'perihal',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )->orWhere(
+                            'klasifikasi',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        );
+                    })
+                    ->get();
+            } else if ($seq == 5) {
+                $dispositions = Disposition::with(['disposable.status_surat'])
+                    ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
+                        $item->where(
+                            'no_surat',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )->orWhere(
+                            'no_agenda',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )->orWhere(
+                            'sumber_surat',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )
+                            ->orWhere(
+                                'perihal',
+                                'like',
+                                '%' . $request->keyword . '%'
+                            )
+                            ->orWhere(
+                                'klasifikasi',
+                                'like',
+                                '%' . $request->keyword . '%'
+                            );
+                    })
+                    ->where('user_id', $user->id)->where('kepada', $user->sub_bagian_id)->get();
             } else {
-                $dispositions = Disposition::with(['disposable.status_surat'])->where('kepada', $user->sub_bagian_id)->get();
+                $dispositions = Disposition::with(['disposable.status_surat'])
+                    ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
+                        $item->where(
+                            'no_surat',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )->orWhere(
+                            'no_agenda',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )->orWhere(
+                            'sumber_surat',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )
+                            ->orWhere(
+                                'perihal',
+                                'like',
+                                '%' . $request->keyword . '%'
+                            )
+                            ->orWhere(
+                                'klasifikasi',
+                                'like',
+                                '%' . $request->keyword . '%'
+                            );
+                    })
+                    ->where('kepada', $user->sub_bagian_id)->get();
             }
         } else {
-            //IF Staff min
-            if ($seq == 5) {
+            if ($seq == 1) {
+                $dispositions = Disposition::with(['disposable.status_surat'])->get();
+            } else if ($seq == 5) {
                 $dispositions = Disposition::with(['disposable.status_surat'])->where('user_id', $user->id)->where('kepada', $user->sub_bagian_id)->get();
             } else {
                 $dispositions = Disposition::with(['disposable.status_surat'])->where('kepada', $user->sub_bagian_id)->get();
             }
         }
+
+        $mappingDisposition = $dispositions->map(function ($item) {
+            $item->disposable->file_path = 'https://api.simantap.ngampooz.com/files/surat_masuk/' . $item->disposable->file;
+            return $item;
+        });
+
+
+
+
 
         // $mappingDispositions = $dispositions->map(function ($item) {
         //     $item->tembusan = $item->sections()->get();
@@ -361,9 +449,6 @@ class DisposisiSuratMasukController extends Controller
                 ->first();
         }
 
-
-
-
         if ($seq == 1) {
             $pdf = PDF::loadView('templates.disposition', [
                 'disposition' => $disposition,
@@ -374,8 +459,14 @@ class DisposisiSuratMasukController extends Controller
                 'disposition' => $disposition,
                 'subSections' => $subSections
             ])->setPaper('a4', 'landscape');
+        } elseif ($seq == 3) {
+            $pdf = PDF::loadView('templates.disposition-kaur', [
+                'disposition' => $disposition,
+                'subSections' => $subSections,
+                'subbag' => explode(" ", $kasubag->user_created_by->bagian->nama)[1]
+            ])->setPaper('a5');
         } elseif ($seq == 4) {
-            $pdf = PDF::loadView('templates.disposition-paur', [
+            $pdf = PDF::loadView('templates.disposition-staffmin', [
                 'disposition' => $disposition,
                 'subSections' => $subSections,
                 'subbag' => explode(" ", $kasubag->user_created_by->bagian->nama)[1]
@@ -442,9 +533,24 @@ class DisposisiSuratMasukController extends Controller
 
         $data = History::with(['historable'])->where('surat_masuk_id', $suratId)->orderBy('created_at', 'asc')->get();
 
+        $mappingData = $data->map(function ($item) {
+            switch ($item->historable_type) {
+                case "App\Models\SuratMasuk":
+                    $item->url = public_path() . "/files/surat_masuk/" . $item->historable->file;
+                    break;
+                case "App\Models\Disposition":
+                    $item->url = null;
+                    break;
+                case "App\Models\StaffMinFile":
+                    $item->url = public_path() . "/files/surat_masuk/" . $item->historable->file;
+                    break;
+            }
+            return $item;
+        });
+
         return response()->json([
             'status' => 'Success',
-            'data' => $data
+            'data' => $mappingData
         ], 200);
     }
 }

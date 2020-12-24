@@ -154,6 +154,7 @@ class DisposisiSuratMasukController extends Controller
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
 
+
         $incomingMessage = SuratMasuk::FindOrFail($suratId);
 
         if ($seq != 3) {
@@ -181,56 +182,30 @@ class DisposisiSuratMasukController extends Controller
 
 
             if ($seq == 3) {
+                // store untuk diposisi kasubag ke paur
+                $paur = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)
+                    ->where('bagian_id', $user->bagian->bagian_id)
+                    ->where(
+                        'atasan',
+                        $user->sub_bagian_id
+                    )
+                    ->first();
+                $disposition = $incomingMessage->dispositions()->create([
+                    'kepada'  => $paur->id,
+                    'isi_disposisi' => $request->isi_disposisi,
+                    'catatan' => $request->catatan ?? null,
+                    'created_by' => $user->id
+                ]);
+                $incomingMessage->update(['status' => 4]);
 
-                //bagian Subagrenmin
-                if ($user->bagian->bagian_id == 2) {
-                    $bagian = explode(' ', $user->bagian->nama);
-
-                    $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
-                        'nama',
-                        'like',
-                        '%' . $bagian[1]
-                    )->first();
-
-                    $disposition = $incomingMessage->dispositions()->create([
-                        'kepada'  => $staff->id,
-                        'catatan' => $request->catatan ?? null,
-                        'isi_disposisi' => $request->isi_disposisi,
-                        'created_by' => $user->id
-                    ]);
-
-                    $incomingMessage->update(['status' => 4]);
-
-                    $this->createStatus($disposition, $incomingMessage, $staff->id, $seq, $user);
-                }
-                // store untuk diposisi kasubag ke paur 
-                else {
-
-                    $name_sec = explode(" ", $user->bagian->nama)[1];
-                    $paur = SubBagian::where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)
-                        ->where(
-                            'nama',
-                            'like',
-                            '%' . $name_sec
-                        )->first();
-
-                    $disposition = $incomingMessage->dispositions()->create([
-                        'kepada'  => $paur->id,
-                        'isi_disposisi' => $request->isi_disposisi,
-                        'catatan' => $request->catatan ?? null,
-                        'created_by' => $user->id
-                    ]);
-                    $incomingMessage->update(['status' => 4]);
-
-                    $this->createStatus($disposition, $incomingMessage, $paur->id, $seq, $user);
-                }
+                $this->createStatus($disposition, $incomingMessage, $paur->id, $seq, $user);
             } else if ($seq == 4) {
                 // store untuk diposisi paur ke staff min
-
-                $name_sec = explode(" ", $user->bagian->nama)[1];
-
                 $staffmin = SubBagian::where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)
-                    ->where('nama', 'staff min ' . $name_sec)->first();
+                    ->where(
+                        'atasan',
+                        $user->sub_bagian_id
+                    )->first();
 
                 $disposition = $incomingMessage->dispositions()->create([
                     'kepada'  => $staffmin->id,
@@ -524,35 +499,19 @@ class DisposisiSuratMasukController extends Controller
         if ($seq == 1) {
             $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->get();
         } else {
-
-            //Jika merupakan subbagrenmin
-            if ($user->bagian->bagian_id == 2) {
-
-                //Jika merupakan kaur subbagrenmin
-                if ($seq == 4) {
-                    $bagian = explode(' ', $user->bagian->nama);
-                    $subSection = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
-                        'nama',
-                        'like',
-                        '%' . $bagian[1]
+            //jika merupakan kaur
+            if ($seq == 4) {
+                $subSection = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')
+                    ->where('seq', $seq + 1)
+                    ->where('bagian_id', $user->bagian->bagian_id)->where(
+                        'atasan',
+                        $user->sub_bagian_id
                     )->first();
-                    $subSections = $subSection->users;
-                } else {
-                    $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->get();
-                }
+                $subSections = $subSection->users;
             } else {
-                //jika merupakan kaur dari bagian lain
-                if ($seq == 4) {
-                    $bagian = explode(' ', $user->bagian->nama);
-                    $subSection = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
-                        'nama',
-                        'like',
-                        '%' . $bagian[1]
-                    )->first();
-                    $subSections = $subSection->users;
-                } else {
-                    $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->get();
-                }
+                $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')
+                    ->where('seq', $seq + 1)
+                    ->where('bagian_id', $user->bagian->bagian_id)->get();
             }
         }
 

@@ -8,7 +8,7 @@ class SubBagian extends Model
 {
     protected $table = 'sub_bagian';
     protected $fillable = [
-        'nama', 'seq', 'bagian_id', 'status_bagian'
+        'nama', 'seq', 'bagian_id', 'status_bagian', 'atasan'
     ];
 
     public function jenis_bagian()
@@ -19,5 +19,10 @@ class SubBagian extends Model
     public function users()
     {
         return $this->hasMany('App\Models\User');
+    }
+
+    public function atasan_sub_bagian()
+    {
+        return $this->belongsTo('App\Models\SubBagian', 'atasan');
     }
 }

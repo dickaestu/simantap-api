@@ -22,13 +22,16 @@ class UserController extends Controller
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
 
-        if($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4){
+        if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
             $bagian = explode(' ', $user->bagian->nama)[1];
-            $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where('nama', 
-            'like', '%'.$bagian)->first();
+            $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
+                'nama',
+                'like',
+                '%' . $bagian
+            )->first();
 
-            $users = User::whereHas('bagian', function($query) use($bagian,$seq){
-                $query->where('nama', 'like', '%'. $bagian)->where('seq', $seq+1);
+            $users = User::whereHas('bagian', function ($query) use ($bagian, $seq) {
+                $query->where('nama', 'like', '%' . $bagian)->where('seq', $seq + 1);
             })->get();
         } else {
             $users = User::All();
@@ -37,7 +40,7 @@ class UserController extends Controller
         return response()->json([
             'message' => 'fetched all successfully.',
             'data' => $users
-        ],200);
+        ], 200);
     }
 
     /**
@@ -50,7 +53,9 @@ class UserController extends Controller
     {
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
-        if($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4){
+
+        if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
+
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
@@ -64,7 +69,7 @@ class UserController extends Controller
                 'username' => 'required|string|max:20|unique:users',
                 'password' => 'required|string|min:8',
                 'roles_id' => 'required|numeric',
-                'bagian_id' => 'required|numeric',
+                'sub_bagian_id' => 'required|numeric',
             ]);
         }
 
@@ -77,10 +82,14 @@ class UserController extends Controller
             $errors = $validator->errors();
             $message = $errors;
         } else {
-            if($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4){
+            if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
                 $bagian = explode(' ', $user->bagian->nama)[1];
-                $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where('nama', 
-                'like', '%'.$bagian)->first();
+                $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')
+                    ->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
+                        'nama',
+                        'like',
+                        '%' . $bagian
+                    )->first();
                 $request->roles_id = 4;
                 $request->bagian_id = $staff->id;
             }
@@ -90,7 +99,7 @@ class UserController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'roles_id' => $request->roles_id,
-                'sub_bagian_id' => $request->bagian_id,
+                'sub_bagian_id' => $request->sub_bagian_id,
             ]);
             if ($userCreated) {
                 $status = "success";
@@ -121,7 +130,7 @@ class UserController extends Controller
         return response()->json([
             'message' => 'fetched successfully.',
             'data' => $user
-        ],200);
+        ], 200);
     }
 
     /**
@@ -136,7 +145,7 @@ class UserController extends Controller
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
         $userFind = User::FindOrFail($id);
-        if($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4){
+        if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users,email,' . $userFind->id,
@@ -147,7 +156,7 @@ class UserController extends Controller
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users,email,' . $userFind->id,
-                'username' => 'required|string|max:20|unique:users,username,'. $userFind->id,
+                'username' => 'required|string|max:20|unique:users,username,' . $userFind->id,
                 'password' => 'required|string|min:8',
                 'roles_id' => 'required|numeric',
                 'bagian_id' => 'required|numeric',
@@ -163,10 +172,13 @@ class UserController extends Controller
             $errors = $validator->errors();
             $message = $errors;
         } else {
-            if($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4){
+            if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
                 $bagian = explode(' ', $user->bagian->nama)[1];
-                $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where('nama', 
-                'like', '%'.$bagian)->first();
+                $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
+                    'nama',
+                    'like',
+                    '%' . $bagian
+                )->first();
                 $request->roles_id = 4;
                 $request->bagian_id = $staff->id;
             }
@@ -209,6 +221,6 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'deleted successfully.',
-        ],200);
+        ], 200);
     }
 }

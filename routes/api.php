@@ -90,6 +90,25 @@ Route::resource('/surat-keluar', 'SuratKeluarController')->middleware('jwt.auth'
 
 Route::resource('/bagian', 'BagianController')->middleware('jwt.auth')->except('create', 'edit');
 
+/*
+|--------------------------------------------------------------------------
+| SubBagian Routes
+|--------------------------------------------------------------------------
+|
+*/
+
+
+Route::resource('/sub-bagian', 'SubBagianController')->middleware('jwt.auth')->except('create', 'edit');
+
+/*
+|--------------------------------------------------------------------------
+| Roles Routes
+|--------------------------------------------------------------------------
+|
+*/
+
+
+Route::resource('/roles', 'RolesController')->middleware('jwt.auth')->except('create', 'edit');
 
 /*
 |--------------------------------------------------------------------------
@@ -108,6 +127,6 @@ Route::post('/staffmin/upload-file/{suratId}', 'StaffMinFileController@store')->
 |
 */
 
-Route::post('/register', 'UserController@store');
+Route::post('/register', 'UserController@store')->middleware('jwt.auth');
 Route::post('/login', 'AuthController@login');
 Route::post('/logout', 'AuthController@logout');

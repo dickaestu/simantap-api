@@ -440,7 +440,6 @@ class DisposisiSuratMasukController extends Controller
             $subSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $bagian_id)->get();
         }
 
-
         if ($seq == 4) {
             $kasubag = Disposition::where('disposable_id', $disposition->disposable->id)
                 ->whereHas('subSector', function ($item) use ($seq) {
@@ -463,13 +462,12 @@ class DisposisiSuratMasukController extends Controller
             $pdf = PDF::loadView('templates.disposition-kaur', [
                 'disposition' => $disposition,
                 'subSections' => $subSections,
-                'subbag' => explode(" ", $kasubag->user_created_by->bagian->nama)[1]
             ])->setPaper('a5');
         } elseif ($seq == 4) {
             $pdf = PDF::loadView('templates.disposition-staffmin', [
                 'disposition' => $disposition,
                 'subSections' => $subSections,
-                'subbag' => explode(" ", $kasubag->user_created_by->bagian->nama)[1]
+                // 'subbag' => explode(" ", $kasubag->user_created_by->bagian->nama)[1]
             ])->setPaper('a5');
         }
 

@@ -192,6 +192,7 @@ class UserController extends Controller
                 'password' => $request->password,
                 'roles_id' => $request->roles_id,
                 'sub_bagian_id' => $request->bagian_id,
+                'is_active' => $request->is_active ?? $userFind->is_active
             ]);
             if ($user) {
                 $status = "success";

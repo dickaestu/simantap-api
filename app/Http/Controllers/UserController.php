@@ -192,6 +192,7 @@ class UserController extends Controller
                 'password' => $request->password,
                 'roles_id' => $request->roles_id,
                 'sub_bagian_id' => $request->bagian_id,
+                'is_active' => $request->is_active ?? $userFind->is_active
             ]);
             if ($user) {
                 $status = "success";
@@ -215,12 +216,12 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
-        $user = User::destroy($id);
+    // public function destroy($id)
+    // {
+    //     $user = User::destroy($id);
 
-        return response()->json([
-            'message' => 'deleted successfully.',
-        ], 200);
-    }
+    //     return response()->json([
+    //         'message' => 'deleted successfully.',
+    //     ], 200);
+    // }
 }

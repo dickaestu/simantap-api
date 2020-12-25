@@ -17,6 +17,19 @@ use Illuminate\Support\Facades\Route;
 // Route::middleware('auth:api')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+
+/*
+|--------------------------------------------------------------------------
+| Admin Manajemen User Routes
+|--------------------------------------------------------------------------
+|
+*/
+Route::group(['prefix' => 'admin', 'middleware' => ['jwt.auth','is.admin']], function(){
+    Route::get('/user', 'UserController@index');
+    Route::get('/user/{user}', 'UserController@show');
+    Route::put('/user/{user}', 'UserController@update');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Paur Manajemen User Routes

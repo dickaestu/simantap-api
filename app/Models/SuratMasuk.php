@@ -46,4 +46,9 @@ class SuratMasuk extends Model
     {
         return $this->morphOne('App\Models\History', 'historable');
     }
+
+    public function staffmin_file()
+    {
+        return $this->hasOne('App\Models\StaffminFile');
+    }
 }

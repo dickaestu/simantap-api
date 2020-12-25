@@ -30,18 +30,25 @@ class AuthController extends Controller
             ];
             $status   = 404;
         } else {
-            if (Hash::check($request->password, $user->password)) {
-                $token = Auth::login($user);
-
-                $response = $this->respondWithToken($token, $user);
-                $status = 200;
-            } else {
+            if($user->is_active == 0) {
                 $response = [
-                    'message' => 'password wrong.'
+                    'message' => 'User is not active. Please contact administrator.'
                 ];
                 $status = 401;
+            } else {
+                    if (Hash::check($request->password, $user->password)) {
+                        $token = Auth::login($user);
+        
+                        $response = $this->respondWithToken($token, $user);
+                        $status = 200;
+                    } else {
+                        $response = [
+                            'message' => 'password wrong.'
+                        ];
+                        $status = 401;
+                    }
+                }
             }
-        }
 
         return response()->json($response, $status);
     }

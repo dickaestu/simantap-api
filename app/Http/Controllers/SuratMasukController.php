@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bagian;
+use App\Models\StaffminFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
@@ -24,6 +25,7 @@ class SuratMasukController extends Controller
     {
         if ($request->keyword) {
             $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                ->where('status', '!=', 6)
 
                 ->where(
                     'no_surat',
@@ -53,11 +55,13 @@ class SuratMasukController extends Controller
                 ->orderBy('created_at', 'desc')->get();
         } else if ($request->start_date && $request->end_date) {
             $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                ->where('status', '!=', 6)
 
                 ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                 ->orderBy('created_at', 'desc')->get();
         } else if ($request->keyword && $request->start_date && $request->end_date) {
             $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                ->where('status', '!=', 6)
 
                 ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                 ->where(
@@ -88,7 +92,7 @@ class SuratMasukController extends Controller
                 ->orderBy('created_at', 'desc')->get();
         } else {
             $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
-
+                ->where('status', '!=', 6)
                 ->orderBy('created_at', 'desc')->get();
         }
 
@@ -107,7 +111,7 @@ class SuratMasukController extends Controller
     public function suratMasukSuccess(Request $request)
     {
         if ($request->keyword) {
-            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat', 'staffmin_file'])
                 ->where('status', 6)
                 ->where(
                     'no_surat',
@@ -136,12 +140,12 @@ class SuratMasukController extends Controller
                 )
                 ->orderBy('created_at', 'desc')->get();
         } else if ($request->start_date && $request->end_date) {
-            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat', 'staffmin_file'])
                 ->where('status', 6)
                 ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                 ->orderBy('created_at', 'desc')->get();
         } else if ($request->keyword && $request->start_date && $request->end_date) {
-            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat', 'staffmin_file'])
                 ->where('status', 6)
                 ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                 ->where(
@@ -171,15 +175,19 @@ class SuratMasukController extends Controller
                 )
                 ->orderBy('created_at', 'desc')->get();
         } else {
-            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat', 'staffmin_file'])
                 ->where('status', 6)
                 ->orderBy('created_at', 'desc')->get();
         }
 
 
+
         $mappingIncomingMessages = $incomingMessages->map(function ($item) {
             $item->file_path =
                 'https://api.simantap.ngampooz.com/files/surat_masuk/' . $item->file;
+            $item->staffmin_file->file_url =
+                'https://api.simantap.ngampooz.com/files/staff_min/' . $item->staffmin_file->file;
+
             return $item;
         });
 

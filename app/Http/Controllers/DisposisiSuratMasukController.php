@@ -31,7 +31,7 @@ class DisposisiSuratMasukController extends Controller
             if ($seq == 1) {
                 $dispositions = Disposition::with(['disposable.status_surat'])
                     ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
-                        return $item->where(
+                        return $item->where('status', '!=', 6)->where(
                             'no_surat',
                             'like',
                             '%' . $request->keyword . '%'
@@ -57,7 +57,7 @@ class DisposisiSuratMasukController extends Controller
             } else if ($seq == 5) {
                 $dispositions = Disposition::with(['disposable.status_surat'])
                     ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
-                        $item->where(
+                        $item->where('status', '!=', 6)->where(
                             'no_surat',
                             'like',
                             '%' . $request->keyword . '%'
@@ -85,7 +85,7 @@ class DisposisiSuratMasukController extends Controller
             } else {
                 $dispositions = Disposition::with(['disposable.status_surat'])
                     ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
-                        $item->where(
+                        $item->where('status', '!=', 6)->where(
                             'no_surat',
                             'like',
                             '%' . $request->keyword . '%'
@@ -113,11 +113,23 @@ class DisposisiSuratMasukController extends Controller
             }
         } else {
             if ($seq == 1) {
-                $dispositions = Disposition::with(['disposable.status_surat'])->get();
+                $dispositions = Disposition::with(['disposable.status_surat'])
+                    ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) {
+                        $item->where('status', '!=', 6);
+                    })
+                    ->get();
             } else if ($seq == 5) {
-                $dispositions = Disposition::with(['disposable.status_surat'])->where('user_id', $user->id)->where('kepada', $user->sub_bagian_id)->get();
+                $dispositions = Disposition::with(['disposable.status_surat'])
+                    ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) {
+                        $item->where('status', '!=', 6);
+                    })
+                    ->where('user_id', $user->id)->where('kepada', $user->sub_bagian_id)->get();
             } else {
-                $dispositions = Disposition::with(['disposable.status_surat'])->where('kepada', $user->sub_bagian_id)->get();
+                $dispositions = Disposition::with(['disposable.status_surat'])
+                    ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) {
+                        $item->where('status', '!=', 6);
+                    })
+                    ->where('kepada', $user->sub_bagian_id)->get();
             }
         }
 

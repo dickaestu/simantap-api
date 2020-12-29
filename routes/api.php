@@ -24,7 +24,8 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 */
-Route::group(['prefix' => 'admin', 'middleware' => ['jwt.auth','is.admin']], function(){
+
+Route::group(['prefix' => 'admin', 'middleware' => ['jwt.auth', 'is.admin']], function () {
     Route::get('/user', 'UserController@index');
     Route::get('/user/{user}', 'UserController@show');
     Route::put('/user/{user}', 'UserController@update');
@@ -92,6 +93,8 @@ Route::post('/surat-masuk', 'SuratMasukController@store')->middleware('jwt.auth'
 
 
 Route::resource('/surat-keluar', 'SuratKeluarController')->middleware('jwt.auth')->except('create', 'edit');
+Route::post('/surat-keluar/confirm/{id}', 'SuratKeluarController@confirm')->middleware('jwt.auth');
+Route::get('/surat-keluar/history/{id}', 'SuratKeluarController@history')->middleware('jwt.auth');
 
 /*
 |--------------------------------------------------------------------------

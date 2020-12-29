@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\StatusSuratKeluar;
 use App\Models\SuratKeluar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -19,26 +20,24 @@ class SuratKeluarController extends Controller
     public function index()
     {
         $user = JWTAuth::user();
+        $seq = $user->bagian->seq;
 
-        $data = SuratKeluar::with(['created_by', 'updated_by'])->whereHas('created_by', function ($item) use ($user) {
-            return $item->where('bagian_id', $user->bagian_id);
-        })->orderBy('created_at', 'desc')->get();
+        $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
+            ->whereHas('bagian', function ($item) use ($user) {
+                return $item->where('id', $user->bagian->bagian_id);
+            })->orderBy('created_at', 'desc')->get();
 
+        $mappingSuratKeluar = $data->map(function ($item) {
+            $item->file_path =
+                'https://api.simantap.ngampooz.com/files/surat_keluar/' . $item->file;
+            return $item;
+        });
         return response()->json([
             'status' => 'Success',
             'data' => $data
         ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -80,7 +79,8 @@ class SuratKeluarController extends Controller
                 'perihal' => $request->perihal,
                 'keterangan' => $request->keterangan,
                 'file' => $fileName,
-                'created_by' => $user->id
+                'created_by' => $user->id,
+                'bagian_id' => $user->bagian->bagian_id
             ]);
             if ($surat_keluar) {
                 $status = "success";
@@ -176,6 +176,46 @@ class SuratKeluarController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Data berhasil dihapus',
+        ], 200);
+    }
+
+    public function confirm($id)
+    {
+        $user = JWTAuth::user();
+        $seq = $user->bagian->seq;
+        if ($seq == 4) {
+            $surat_keluar = SuratKeluar::findOrFail($id);
+            $surat_keluar->update([
+                'status' => 2
+            ]);
+        } else if ($seq == 3) {
+            $surat_keluar = SuratKeluar::findOrFail($id);
+            $surat_keluar->update([
+                'status' => 3
+            ]);
+        } else if ($seq == 2) {
+            $surat_keluar = SuratKeluar::findOrFail($id);
+            $surat_keluar->update([
+                'status' => 4
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Konfirmasi Berhasil',
+        ], 200);
+    }
+
+    public function history($id)
+    {
+
+        $surat_keluar = SuratKeluar::findOrfail($id);
+
+        $data = StatusSuratKeluar::where('id', '<=', $surat_keluar->status)->get();
+
+        return response()->json([
+            'status' => 'Success',
+            'data' => $data
         ], 200);
     }
 }

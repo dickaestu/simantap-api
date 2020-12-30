@@ -144,5 +144,6 @@ Route::post('/staffmin/upload-file/{suratId}', 'StaffMinFileController@store')->
 */
 
 Route::post('/register', 'UserController@store')->middleware('jwt.auth');
+Route::get('/profile', 'UserController@profile')->middleware('jwt.auth');
 Route::post('/login', 'AuthController@login');
 Route::post('/logout', 'AuthController@logout');

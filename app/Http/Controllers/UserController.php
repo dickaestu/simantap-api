@@ -210,18 +210,15 @@ class UserController extends Controller
         ], $code);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    // public function destroy($id)
-    // {
-    //     $user = User::destroy($id);
+    public function profile()
+    {
+        $user = JWTAuth::user();
 
-    //     return response()->json([
-    //         'message' => 'deleted successfully.',
-    //     ], 200);
-    // }
+        $data = User::with(['bagian.jenis_bagian', 'role'])->where('id', $user->id)->firstOrFail();
+
+        return response()->json([
+            'message' => 'fetched all successfully.',
+            'data' => $data
+        ], 200);
+    }
 }

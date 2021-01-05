@@ -38,7 +38,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['jwt.auth', 'is.admin']], fu
 |
 */
 
-Route::resource('/paur/user', 'UserController')->middleware(['jwt.auth', 'beyond.paur'])->except('create', 'edit');
+Route::resource('/paur/user', 'PaurController')->middleware(['jwt.auth', 'beyond.paur'])->except('create', 'edit');
 
 /*
 |--------------------------------------------------------------------------

@@ -17,7 +17,7 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
@@ -34,7 +34,11 @@ class UserController extends Controller
                 $query->where('nama', 'like', '%' . $bagian)->where('seq', $seq + 1);
             })->get();
         } else {
-            $users = User::All();
+            if ($request->keyword) {
+                $users = User::where('name', 'like', '%' . $request->keyword . '%')->get();
+            } else {
+                $users = User::All();
+            }
         }
 
         return response()->json([
@@ -150,14 +154,14 @@ class UserController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users,email,' . $userFind->id,
                 'username' => 'required|string|max:20|unique:users,username,' . $userFind->id,
-                'password' => 'required|string|min:8',
+                'password' => 'string|min:8',
             ]);
         } else {
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users,email,' . $userFind->id,
                 'username' => 'required|string|max:20|unique:users,username,' . $userFind->id,
-                'password' => 'required|string|min:8',
+                'password' => 'string|min:8',
                 'roles_id' => 'required|numeric',
                 'bagian_id' => 'required|numeric',
             ]);
@@ -182,18 +186,28 @@ class UserController extends Controller
                 $request->roles_id = 4;
                 $request->bagian_id = $staff->id;
             }
-            if (!Hash::check($request->password, $user->password)) {
-                $request->password = Hash::make($request->password);
+            if ($request->password) {
+                $userFind->update([
+                    'name' => $request->name,
+                    'username' => $request->username,
+                    'email' => $request->email,
+                    'password' => $request->password,
+                    'roles_id' => $request->roles_id,
+                    'sub_bagian_id' => $request->bagian_id,
+                    'is_active' => $request->is_active ?? $userFind->is_active
+                ]);
+            } else {
+                $userFind->update([
+                    'name' => $request->name,
+                    'username' => $request->username,
+                    'email' => $request->email,
+                    'roles_id' => $request->roles_id,
+                    'sub_bagian_id' => $request->bagian_id,
+                    'is_active' => $request->is_active ?? $userFind->is_active
+                ]);
             }
-            $userFind->update([
-                'name' => $request->name,
-                'username' => $request->username,
-                'email' => $request->email,
-                'password' => $request->password,
-                'roles_id' => $request->roles_id,
-                'sub_bagian_id' => $request->bagian_id,
-                'is_active' => $request->is_active ?? $userFind->is_active
-            ]);
+
+
             if ($user) {
                 $status = "success";
                 $message = "updated successfully";

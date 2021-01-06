@@ -6,6 +6,8 @@ use App\Models\Disposition;
 use App\Models\History;
 use App\Models\SuratMasuk;
 use App\Models\SubBagian;
+use App\Models\Notification;
+use App\Models\User;
 
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -166,8 +168,8 @@ class DisposisiSuratMasukController extends Controller
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
 
-
         $incomingMessage = SuratMasuk::FindOrFail($suratId);
+
 
         if ($seq != 3) {
             $validator = Validator::make($request->all(), [
@@ -248,6 +250,9 @@ class DisposisiSuratMasukController extends Controller
                 // if ($tembusan = $request->tembusan) {
                 //     $disposition->sections()->sync($tembusan);
                 // }
+                $notification = new Notification;
+                $user = User::FindOrFail($request->kepada);
+                $notification->toSingleDevice($user->device_token, 'This is title', 'this is body', null, null);
 
                 $response = [
                     'message' => 'Stored Successfully',

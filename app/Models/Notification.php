@@ -16,7 +16,7 @@ class Notification extends Model
         return $this->morphTo();
     }
 
-    public static function toSingleDevice($token = null, $title = null, $body = null, $icon, $click_action)
+    public static function toSingleDevice($token = null, $title = null, $body = null, $icon, $click_action, $data)
     {
         $optionBuilder = new OptionsBuilder();
         $optionBuilder->setTimeToLive(60 * 20);
@@ -30,14 +30,16 @@ class Notification extends Model
             ;
 
         $dataBuilder = new PayloadDataBuilder();
-        // $dataBuilder->addData(['a_data' => 'my_data']);
+        $dataBuilder->addData([
+            'type' => $data['type'],
+            'id' => $data['id']
+        ]);
 
         $option = $optionBuilder->build();
         $notification = $notificationBuilder->build();
         $data = $dataBuilder->build();
 
         $downstreamResponse = FCM::sendTo($token, $option, $notification, $data);
-
         $downstreamResponse->numberSuccess();
         $downstreamResponse->numberFailure();
         $downstreamResponse->numberModification();

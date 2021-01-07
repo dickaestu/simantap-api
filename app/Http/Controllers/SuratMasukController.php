@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Bagian;
 use App\Models\StaffminFile;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 use Tymon\JWTAuth\Facades\JWTAuth;
-
 use PDF;
 
 use App\Models\SuratMasuk;
@@ -250,6 +250,18 @@ class SuratMasukController extends Controller
                 'status' => 'Surat Masuk dibuat Karo.',
                 'surat_masuk_id' => $message->id
             ]);
+            
+            $userReceiveNotif = User::where('roles_id', 2)->where('sub_bagian_id', 1)->first();
+            //Set FirebaseData for Send Notification
+            $firebaseData = [
+                'token' => $userReceiveNotif->device_token,
+                'body' => 'Terdapat surat masuk dengan nomor surat :' . $message->no_surat,
+                'data' => [
+                    'id' => $message->id,
+                    'type' => 'surat_masuk'
+                ],
+                'title' => 'Surat masuk telah diterima'
+            ];
 
             $response = [
                 'message' => 'stored successfully'

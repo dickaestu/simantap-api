@@ -170,7 +170,6 @@ class DisposisiSuratMasukController extends Controller
 
         $incomingMessage = SuratMasuk::FindOrFail($suratId);
 
-
         if ($seq != 3) {
             $validator = Validator::make($request->all(), [
                 'kepada'  => 'required|numeric',
@@ -212,7 +211,18 @@ class DisposisiSuratMasukController extends Controller
                 ]);
                 $incomingMessage->update(['status' => 4]);
 
-                $this->createStatus($disposition, $incomingMessage, $paur->id, $seq, $user);
+                //Get token firebase from user
+                $body = $this->createStatus($disposition, $incomingMessage, $paur->id, $seq, $user);
+                $firebaseData = [
+                    'token' => $paur->users()->where('roles_id', 2)->first()->device_token,
+                    'body' => $body,
+                    'data' => [
+                        'id' => $disposition->id,
+                        'type' => 'disposition'
+                    ],
+                    'title' => '1 pekerjaan telah masuk.'
+                ];
+
             } else if ($seq == 4) {
                 // store untuk diposisi paur ke staff min
                 $staffmin = SubBagian::where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)
@@ -231,7 +241,19 @@ class DisposisiSuratMasukController extends Controller
 
                 $incomingMessage->update(['status' => 5]);
 
-                $this->createStatus($disposition, $incomingMessage, $staffmin->id, $seq, $user);
+                //Get token firebase from user
+                $body = $this->createStatus($disposition, $incomingMessage, $staffmin->id, $seq, $user);
+                $userReceivedNotif = User::FindOrFail($request->kepada);
+                $firebaseData = [
+                    'token' => $userReceivedNotif->device_token,
+                    'body' => $body,
+                    'data' => [
+                        'id' => $disposition->id,
+                        'type' => 'disposition'
+                    ],
+                    'title' => '1 pekerjaan telah masuk.'
+                ];
+
             } else {
                 if ($seq == 1) {
                     $incomingMessage->update(['status' => 2]);
@@ -245,14 +267,21 @@ class DisposisiSuratMasukController extends Controller
                     'created_by' => $user->id
                 ]);
 
-                $this->createStatus($disposition, $incomingMessage, $request->kepada, $seq, $user);
-
+                //Get token firebase from user
+                $body = $this->createStatus($disposition, $incomingMessage, $request->kepada, $seq, $user);
+                $subBagian = SubBagian::FindOrFail($request->kepada);
+                $firebaseData = [
+                    'token' => $subBagian->users()->where('roles_id', 2)->first()->device_token,
+                    'body' => $body,
+                    'data' => [
+                        'id' => $disposition->id,
+                        'type' => 'disposition'
+                    ],
+                    'title' => '1 pekerjaan telah masuk.'
+                ];
                 // if ($tembusan = $request->tembusan) {
                 //     $disposition->sections()->sync($tembusan);
                 // }
-                $notification = new Notification;
-                $user = User::FindOrFail($request->kepada);
-                $notification->toSingleDevice($user->device_token, 'This is title', 'this is body', null, null);
 
                 $response = [
                     'message' => 'Stored Successfully',
@@ -264,6 +293,12 @@ class DisposisiSuratMasukController extends Controller
         if (!$response && !$status) {
             $response = ['message' => 'stored successfully'];
             $status = 201;
+        }
+
+        //Send Notification to Firebase
+        if($firebaseData['token']){
+            $notification = new Notification;
+            $notification->toSingleDevice($firebaseData['token'], $firebaseData['title'], $firebaseData['body'], null, null, $firebaseData['data']);
         }
 
         return response()->json($response, $status);
@@ -279,6 +314,7 @@ class DisposisiSuratMasukController extends Controller
                     'status' => 'Surat di disposisi oleh Karo ke ' . $subBagian->nama,
                     'surat_masuk_id' => $incomingMessage->id
                 ]);
+                $body = 'Disposisi surat dari Karo, Nomor Surat: ' . $incomingMessage->no_surat;
                 break;
 
             default:
@@ -286,8 +322,11 @@ class DisposisiSuratMasukController extends Controller
                     'status' => $bagian->nama  . ' mendisposisikan ke bagian ' . $subBagian->nama,
                     'surat_masuk_id' => $incomingMessage->id
                 ]);
+                $body = 'Disposisi surat dari' . ucwords($bagian->nama) . 'Nomor Surat: ' . $incomingMessage->no_surat;
                 break;
         }
+
+        return $body;
     }
 
     /**

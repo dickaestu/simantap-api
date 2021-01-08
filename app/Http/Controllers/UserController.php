@@ -22,24 +22,24 @@ class UserController extends Controller
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
 
-        if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
-            $bagian = explode(' ', $user->bagian->nama)[1];
-            $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
-                'nama',
-                'like',
-                '%' . $bagian
-            )->first();
+        // if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
+        //     $bagian = explode(' ', $user->bagian->nama)[1];
+        //     $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
+        //         'nama',
+        //         'like',
+        //         '%' . $bagian
+        //     )->first();
 
-            $users = User::whereHas('bagian', function ($query) use ($bagian, $seq) {
-                $query->where('nama', 'like', '%' . $bagian)->where('seq', $seq + 1);
-            })->get();
+        //     $users = User::whereHas('bagian', function ($query) use ($bagian, $seq) {
+        //         $query->where('nama', 'like', '%' . $bagian)->where('seq', $seq + 1);
+        //     })->get();
+        // } else {
+        if ($request->keyword) {
+            $users = User::where('name', 'like', '%' . $request->keyword . '%')->get();
         } else {
-            if ($request->keyword) {
-                $users = User::where('name', 'like', '%' . $request->keyword . '%')->get();
-            } else {
-                $users = User::All();
-            }
+            $users = User::All();
         }
+
 
         return response()->json([
             'message' => 'fetched all successfully.',
@@ -58,24 +58,24 @@ class UserController extends Controller
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
 
-        if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
+        // if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
 
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
-                'username' => 'required|string|max:20|unique:users',
-                'password' => 'required|string|min:8',
-            ]);
-        } else {
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
-                'username' => 'required|string|max:20|unique:users',
-                'password' => 'required|string|min:8',
-                'roles_id' => 'required|numeric',
-                'sub_bagian_id' => 'required|numeric',
-            ]);
-        }
+        //     $validator = Validator::make($request->all(), [
+        //         'name' => 'required|string|max:255',
+        //         'email' => 'required|string|email|max:255|unique:users',
+        //         'username' => 'required|string|max:20|unique:users',
+        //         'password' => 'required|string|min:8',
+        //     ]);
+        // } else {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'username' => 'required|string|max:20|unique:users',
+            'password' => 'required|string|min:8',
+            'roles_id' => 'required|numeric',
+            'sub_bagian_id' => 'required|numeric',
+        ]);
+
 
         $status = "error";
         $message = "";
@@ -86,17 +86,17 @@ class UserController extends Controller
             $errors = $validator->errors();
             $message = $errors;
         } else {
-            if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
-                $bagian = explode(' ', $user->bagian->nama)[1];
-                $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')
-                    ->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
-                        'nama',
-                        'like',
-                        '%' . $bagian
-                    )->first();
-                $request->roles_id = 4;
-                $request->bagian_id = $staff->id;
-            }
+            // if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
+            //     $bagian = explode(' ', $user->bagian->nama)[1];
+            //     $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')
+            //         ->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
+            //             'nama',
+            //             'like',
+            //             '%' . $bagian
+            //         )->first();
+            //     $request->roles_id = 4;
+            //     $request->bagian_id = $staff->id;
+            // }
             $userCreated = User::create([
                 'name' => $request->name,
                 'username' => $request->username,
@@ -149,23 +149,23 @@ class UserController extends Controller
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
         $userFind = User::FindOrFail($id);
-        if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users,email,' . $userFind->id,
-                'username' => 'required|string|max:20|unique:users,username,' . $userFind->id,
-                'password' => 'string|min:8',
-            ]);
-        } else {
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users,email,' . $userFind->id,
-                'username' => 'required|string|max:20|unique:users,username,' . $userFind->id,
-                'password' => 'string|min:8',
-                'roles_id' => 'required|numeric',
-                'bagian_id' => 'required|numeric',
-            ]);
-        }
+        // if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
+        //     $validator = Validator::make($request->all(), [
+        //         'name' => 'required|string|max:255',
+        //         'email' => 'required|string|email|max:255|unique:users,email,' . $userFind->id,
+        //         'username' => 'required|string|max:20|unique:users,username,' . $userFind->id,
+        //         'password' => 'string|min:8',
+        //     ]);
+        // } else {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $userFind->id,
+            'username' => 'required|string|max:20|unique:users,username,' . $userFind->id,
+            'password' => 'string|min:8',
+            'roles_id' => 'required|numeric',
+            'bagian_id' => 'required|numeric',
+        ]);
+
 
         $status = "error";
         $message = "";
@@ -176,16 +176,16 @@ class UserController extends Controller
             $errors = $validator->errors();
             $message = $errors;
         } else {
-            if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
-                $bagian = explode(' ', $user->bagian->nama)[1];
-                $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
-                    'nama',
-                    'like',
-                    '%' . $bagian
-                )->first();
-                $request->roles_id = 4;
-                $request->bagian_id = $staff->id;
-            }
+            // if ($user->bagian->bagian_id == 2 && $seq == 3 || $seq == 4) {
+            //     $bagian = explode(' ', $user->bagian->nama)[1];
+            //     $staff = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)->where(
+            //         'nama',
+            //         'like',
+            //         '%' . $bagian
+            //     )->first();
+            //     $request->roles_id = 4;
+            //     $request->bagian_id = $staff->id;
+            // }
             if ($request->password) {
                 $userFind->update([
                     'name' => $request->name,

@@ -134,7 +134,17 @@ Route::resource('/roles', 'RolesController')->middleware('jwt.auth')->except('cr
 */
 Route::post('/staffmin/upload-file/{suratId}', 'StaffMinFileController@store')->middleware('jwt.auth');
 
+/*
+|--------------------------------------------------------------------------
+| Report Routes
+|--------------------------------------------------------------------------
+|
+*/
 
+Route::group(['prefix' => 'report', 'middleware' => ['jwt.auth']], function () {
+    Route::get('/surat-masuk', 'ReportController@suratMasuk');
+    Route::get('/surat-keluar', 'ReportController@suratKeluar');
+});
 
 /*
 |--------------------------------------------------------------------------

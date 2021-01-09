@@ -51,4 +51,8 @@ class SuratMasuk extends Model
     {
         return $this->hasOne('App\Models\StaffminFile');
     }
+
+    public function notifications(){
+        return $this->morphMany('App\Models\Notification', 'notifable');
+    }
 }

@@ -215,6 +215,7 @@ class DisposisiSuratMasukController extends Controller
                 $body = $this->createStatus($disposition, $incomingMessage, $paur->id, $seq, $user);
                 $firebaseData = [
                     'token' => $paur->users()->where('roles_id', 2)->first()->device_token,
+                    'user_id' => $paur->users()->where('roles_id', 2)->first()->id,
                     'body' => $body,
                     'data' => [
                         'id' => $disposition->id,
@@ -246,6 +247,7 @@ class DisposisiSuratMasukController extends Controller
                 $userReceivedNotif = User::FindOrFail($request->kepada);
                 $firebaseData = [
                     'token' => $userReceivedNotif->device_token,
+                    'user_id' => $userReceivedNotif->id,
                     'body' => $body,
                     'data' => [
                         'id' => $disposition->id,
@@ -272,6 +274,7 @@ class DisposisiSuratMasukController extends Controller
                 $subBagian = SubBagian::FindOrFail($request->kepada);
                 $firebaseData = [
                     'token' => $subBagian->users()->where('roles_id', 2)->first()->device_token,
+                    'user_id' => $subBagian->users()->where('roles_id', 2)->first()->id,
                     'body' => $body,
                     'data' => [
                         'id' => $disposition->id,
@@ -299,6 +302,7 @@ class DisposisiSuratMasukController extends Controller
         if($firebaseData['token']){
             $notification = new Notification;
             $notification->toSingleDevice($firebaseData['token'], $firebaseData['title'], $firebaseData['body'], null, null, $firebaseData['data']);
+            NotificationController::store($disposition, $firebaseData['user_id']);
         }
 
         return response()->json($response, $status);

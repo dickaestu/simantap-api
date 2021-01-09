@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Bagian;
 use App\Models\StaffminFile;
 use App\Models\User;
+use App\Models\Notification;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
@@ -262,6 +264,9 @@ class SuratMasukController extends Controller
                 ],
                 'title' => 'Surat masuk telah diterima'
             ];
+
+            $notification = new Notification;
+            $notification->toSingleDevice($firebaseData['token'], $firebaseData['title'], $firebaseData['body']);
 
             $response = [
                 'message' => 'stored successfully'

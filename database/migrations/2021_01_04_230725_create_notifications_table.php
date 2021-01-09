@@ -13,14 +13,14 @@ class CreateNotificationsTable extends Migration
      */
     public function up()
     {
-        // Schema::create('notifications', function (Blueprint $table) {
-        //     $table->id();
-        //     $table->string('notifable_type');
-        //     $table->bigInteger('notifable_id');
-        //     $table->bigInteger('user_id');
-        //     $table->timestamp('read_at');
-        //     $table->timestamps();
-        // });
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->id();
+            $table->string('notifable_type');
+            $table->bigInteger('notifable_id');
+            $table->bigInteger('user_id');
+            $table->dateTime('read_at')->nullable();
+            $table->timestamps();
+        });
     }
 
     /**
@@ -30,6 +30,6 @@ class CreateNotificationsTable extends Migration
      */
     public function down()
     {
-        // Schema::dropIfExists('notifications');
+        Schema::dropIfExists('notifications');
     }
 }

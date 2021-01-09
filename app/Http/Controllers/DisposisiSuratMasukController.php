@@ -214,7 +214,7 @@ class DisposisiSuratMasukController extends Controller
                 //Get token firebase from user
                 $body = $this->createStatus($disposition, $incomingMessage, $paur->id, $seq, $user);
                 $firebaseData = [
-                    'token' => $paur->users()->where('roles_id', 2)->first()->device_token,
+                    'token' => $paur->users()->where('roles_id', 2)->first()->device_token ?? null,
                     'user_id' => $paur->users()->where('roles_id', 2)->first()->id,
                     'body' => $body,
                     'data' => [
@@ -246,7 +246,7 @@ class DisposisiSuratMasukController extends Controller
                 $body = $this->createStatus($disposition, $incomingMessage, $staffmin->id, $seq, $user);
                 $userReceivedNotif = User::FindOrFail($request->kepada);
                 $firebaseData = [
-                    'token' => $userReceivedNotif->device_token,
+                    'token' => $userReceivedNotif->device_token ?? null,
                     'user_id' => $userReceivedNotif->id,
                     'body' => $body,
                     'data' => [
@@ -273,7 +273,7 @@ class DisposisiSuratMasukController extends Controller
                 $body = $this->createStatus($disposition, $incomingMessage, $request->kepada, $seq, $user);
                 $subBagian = SubBagian::FindOrFail($request->kepada);
                 $firebaseData = [
-                    'token' => $subBagian->users()->where('roles_id', 2)->first()->device_token,
+                    'token' => $subBagian->users()->where('roles_id', 2)->first()->device_token ?? null,
                     'user_id' => $subBagian->users()->where('roles_id', 2)->first()->id,
                     'body' => $body,
                     'data' => [
@@ -301,8 +301,10 @@ class DisposisiSuratMasukController extends Controller
         //Send Notification to Firebase
         if($firebaseData['token']){
             $notification = new Notification;
-            $notification->toSingleDevice($firebaseData['token'], $firebaseData['title'], $firebaseData['body'], null, null, $firebaseData['data']);
-            NotificationController::store($disposition, $firebaseData['user_id']);
+            $notification->toSingleDevice($firebaseData, null, null);
+            if($firebaseData['token']){
+                NotificationController::store($disposition, $firebaseData['user_id']);
+            }
         }
 
         return response()->json($response, $status);

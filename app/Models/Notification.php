@@ -16,13 +16,13 @@ class Notification extends Model
         return $this->morphTo();
     }
 
-    public static function toSingleDevice($token = null, $title = null, $body = null, $icon, $click_action, $data)
+    public static function toSingleDevice($firebase, $icon, $click_action)
     {
         $optionBuilder = new OptionsBuilder();
         $optionBuilder->setTimeToLive(60 * 20);
 
-        $notificationBuilder = new PayloadNotificationBuilder($title);
-        $notificationBuilder->setBody($body)
+        $notificationBuilder = new PayloadNotificationBuilder($firebase['title']);
+        $notificationBuilder->setBody($firebase['body'])
             ->setSound('default')
             ->setBadge(1)
             ->setIcon($icon)
@@ -31,15 +31,15 @@ class Notification extends Model
 
         $dataBuilder = new PayloadDataBuilder();
         $dataBuilder->addData([
-            'type' => $data['type'],
-            'id' => $data['id']
+            'type' => $firebase['data']['type'],
+            'id' => $firebase['data']['id']
         ]);
 
         $option = $optionBuilder->build();
         $notification = $notificationBuilder->build();
         $data = $dataBuilder->build();
 
-        $downstreamResponse = FCM::sendTo($token, $option, $notification, $data);
+        $downstreamResponse = FCM::sendTo($firebase['token'], $option, $notification, $data);
         $downstreamResponse->numberSuccess();
         $downstreamResponse->numberFailure();
         $downstreamResponse->numberModification();

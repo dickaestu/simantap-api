@@ -256,7 +256,8 @@ class SuratMasukController extends Controller
             $userReceiveNotif = User::where('roles_id', 2)->where('sub_bagian_id', 1)->first();
             //Set FirebaseData for Send Notification
             $firebaseData = [
-                'token' => $userReceiveNotif->device_token,
+                'token' => $userReceiveNotif->device_token ?? null,
+                'user_id' => $userReceiveNotif->id,
                 'body' => 'Terdapat surat masuk dengan nomor surat :' . $message->no_surat,
                 'data' => [
                     'id' => $message->id,
@@ -266,8 +267,11 @@ class SuratMasukController extends Controller
             ];
 
             $notification = new Notification;
-            $notification->toSingleDevice($firebaseData['token'], $firebaseData['title'], $firebaseData['body']);
-
+            $notification->toSingleDevice($firebaseData, null, null);
+        
+            if($firebaseData['token']){
+                NotificationController::store($message, $firebaseData['user_id']);
+            }
             $response = [
                 'message' => 'stored successfully'
             ];

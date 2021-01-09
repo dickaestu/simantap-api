@@ -43,4 +43,8 @@ class Disposition extends Model
     {
         return $this->morphOne('App\Models\History', 'historable');
     }
+
+    public function notifications() {
+        return $this->morphMany('App\Models\Notification', 'notifable');
+    }
 }

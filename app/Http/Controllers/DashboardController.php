@@ -33,7 +33,12 @@ class DashboardController extends Controller
             ->whereBetween('created_at', [$start, $end])
             ->groupBy('created_at')->get()->pluck('total_surat', 'created_date')->all();
 
-
+        $surat_keluar_monthly = SuratKeluar::select(
+            DB::raw('date(created_at) as created_date'),
+            DB::raw('sum(id) as total_surat')
+        )
+            ->whereBetween('created_at', [$start, $end])
+            ->groupBy('created_at')->get()->pluck('total_surat', 'created_date')->all();
         for ($i = Carbon::parse($start); $i <= Carbon::parse($end); $i->addDays()) {
             if (array_key_exists($i->format('Y-m'), $surat_masuk_monthly)) {
 
@@ -44,13 +49,35 @@ class DashboardController extends Controller
             }
         }
 
+        //MonthList Surat Masuk
         foreach ($data as $key => $dt) {
             $obj = (object) array('date' => $key, 'value' => $dt);
-
-            $new_arr[] = $obj;
+            $monthListSuratMasuk[] = $obj;
         }
 
-        dd($data);
+        //MonthList Surat Keluar
+        foreach ($data as $key => $dt) {
+            $obj = (object) array('date' => $key, 'value' => $dt);
+            $monthListSuratKeluar[] = $obj;
+        }
+
+        //Count Surat Masuk
+        foreach ($surat_masuk_monthly as $key => $value) {
+            foreach ($monthListSuratMasuk as $month) {
+                if ($month->date == Carbon::parse($key)->format('Y-m')) {
+                    $month->value += $value;
+                }
+            }
+        }
+
+        //Count Surat Keluar
+        foreach ($surat_keluar_monthly as $key => $value) {
+            foreach ($monthListSuratKeluar as $month) {
+                if ($month->date == Carbon::parse($key)->format('Y-m')) {
+                    $month->value += $value;
+                }
+            }
+        }
 
         return response()->json([
             'message' => 'fetched all success.',
@@ -58,6 +85,8 @@ class DashboardController extends Controller
             'surat_masuk_done' => $surat_masuk_done,
             'surat_keluar_on_process' => $surat_keluar_on_process,
             'surat_keluar_done' => $surat_keluar_done,
+            'grafik_surat_masuk' => $monthListSuratMasuk,
+            'grafik_surat_keluar' => $monthListSuratKeluar,
         ], 200);
     }
 }

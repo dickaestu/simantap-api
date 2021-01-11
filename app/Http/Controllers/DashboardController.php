@@ -28,14 +28,14 @@ class DashboardController extends Controller
 
         $surat_masuk_monthly = SuratMasuk::select(
             DB::raw('date(created_at) as created_date'),
-            DB::raw('sum(id) as total_surat')
+            DB::raw('count(id) as total_surat')
         )
             ->whereBetween('created_at', [$start, $end])
             ->groupBy('created_at')->get()->pluck('total_surat', 'created_date')->all();
 
         $surat_keluar_monthly = SuratKeluar::select(
             DB::raw('date(created_at) as created_date'),
-            DB::raw('sum(id) as total_surat')
+            DB::raw('count(id) as total_surat')
         )
             ->whereBetween('created_at', [$start, $end])
             ->groupBy('created_at')->get()->pluck('total_surat', 'created_date')->all();

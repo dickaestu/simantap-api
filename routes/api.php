@@ -24,7 +24,17 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 */
+
 Route::resource('/notification', 'NotificationController')->middleware('jwt.auth')->only(['index', 'update']);
+
+/*
+|--------------------------------------------------------------------------
+| Paur Manajemen User Routes
+|--------------------------------------------------------------------------
+|
+*/
+
+Route::get('/dashboard', 'DashboardController@dashboard')->middleware(['jwt.auth']);
 
 /*
 |--------------------------------------------------------------------------

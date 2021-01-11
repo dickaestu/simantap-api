@@ -13,10 +13,13 @@ class DashboardController extends Controller
 {
     public function dashboard(Request $request)
     {
-        $start = Carbon::parse($request->start_date)->setTime(0,0,1);
-        $end = Carbon::parse($request->end_date)->setTime(23,59,59);
-
-        $user = JWTAuth::user();
+        if(!$request->start_date && !$request->end_date){
+            $end = Carbon::parse(now())->setTime(23,59,59);
+            $start = Carbon::parse($end)->subMonth(5)->setTime(0,0,1);
+        } else {
+            $start = Carbon::parse($request->start_date)->setTime(0,0,1);
+            $end = Carbon::parse($request->end_date)->setTime(23,59,59);
+        }
 
         $surat_masuk_on_process = SuratMasuk::where('status', '<', 6)->count();
         $surat_masuk_done = SuratMasuk::where('status', 6)->count();
@@ -25,7 +28,7 @@ class DashboardController extends Controller
 
         //Check Months
         $diffInMonths = $start->diffInMonths($end);
-
+        
         for($i=0; $i< $diffInMonths;$i++){
             $monthListMasuk[] = (object) [
                 'date' => Carbon::parse($start)->addMonth($i)->format('Y-m'),
@@ -36,8 +39,8 @@ class DashboardController extends Controller
                 'value' => 0,
             ];
         }
-
-        //Count Surat Masuk
+        
+        // Count Surat Masuk
         foreach($monthListMasuk as $month){
             $month->value = SuratMasuk::where('created_at', 'like', $month->date.'%')->count();
         }

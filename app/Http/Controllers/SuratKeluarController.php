@@ -23,7 +23,7 @@ class SuratKeluarController extends Controller
         $seq = $user->bagian->seq;
 
         if ($seq == 5 || $seq == 4) {
-            if ($request->keyword) {
+            if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
                 $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
                     ->orWhere(
                         function ($query) use ($request) {
@@ -86,7 +86,7 @@ class SuratKeluarController extends Controller
                     ->orderBy('created_at', 'desc')->get();
             }
         } else if ($seq == 3) {
-            if ($request->keyword) {
+            if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
                 $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
                     ->orWhere(
                         function ($query) use ($request) {

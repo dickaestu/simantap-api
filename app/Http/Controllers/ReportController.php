@@ -20,8 +20,10 @@ class ReportController extends Controller
     {
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
+
         if ($seq === 1) {
-            if ($request->keyword) {
+            if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
+
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
                     ->where('status', 6)
 
@@ -52,12 +54,14 @@ class ReportController extends Controller
                     )
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->start_date && $request->end_date) {
+
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
                     ->where('status', 6)
 
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->keyword && $request->start_date && $request->end_date) {
+
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
                     ->where('status', 6)
 
@@ -89,12 +93,14 @@ class ReportController extends Controller
                     )
                     ->orderBy('created_at', 'desc')->get();
             } else {
+
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
                     ->where('status', 6)
                     ->orderBy('created_at', 'desc')->get();
             }
         } else {
-            if ($request->keyword) {
+            if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
+
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
                     ->orWhere(
                         function ($query) use ($request) {
@@ -145,6 +151,7 @@ class ReportController extends Controller
 
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->keyword && $request->start_date && $request->end_date) {
+
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->orWhere(
@@ -211,7 +218,7 @@ class ReportController extends Controller
     public function suratKeluar(Request $request)
     {
         $user = JWTAuth::user();
-        if ($request->keyword) {
+        if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
             $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
                 ->orWhere(
                     function ($query) use ($request) {

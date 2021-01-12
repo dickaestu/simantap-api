@@ -28,7 +28,7 @@ class SuratMasukController extends Controller
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
         if ($seq === 1) {
-            if ($request->keyword) {
+            if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
                     ->where('status', '!=', 6)
 
@@ -101,7 +101,7 @@ class SuratMasukController extends Controller
                     ->orderBy('created_at', 'desc')->get();
             }
         } else {
-            if ($request->keyword) {
+            if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
                     ->orWhere(
                         function ($query) use ($request) {
@@ -216,7 +216,7 @@ class SuratMasukController extends Controller
 
     public function suratMasukSuccess(Request $request)
     {
-        if ($request->keyword) {
+        if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
             $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat', 'staffmin_file'])
                 ->where('status', 6)
                 ->where(

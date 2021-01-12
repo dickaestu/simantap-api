@@ -96,33 +96,37 @@ class ReportController extends Controller
         } else {
             if ($request->keyword) {
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
-                    ->where('status', 6)
+                    ->orWhere(
+                        function ($query) use ($request) {
+                            $query->where(
+                                'no_surat',
+                                'like',
+                                '%' . $request->keyword . '%'
+                            )
+                                ->orWhere(
+                                    'no_agenda',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                )
+                                ->orWhere(
+                                    'sumber_surat',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                )
+                                ->orWhere(
+                                    'perihal',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                )
+                                ->orWhere(
+                                    'klasifikasi',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                );
+                        }
+                    )
 
-                    ->where(
-                        'no_surat',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
-                        'no_agenda',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
-                        'sumber_surat',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
-                        'perihal',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
-                        'klasifikasi',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
+                    ->where('status', 6)
                     ->whereHas('dispositions', function ($item) use ($user) {
                         $item->whereHas('subSector', function ($q) use ($user) {
                             $q->where('bagian_id', $user->bagian->bagian_id);
@@ -131,44 +135,62 @@ class ReportController extends Controller
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->start_date && $request->end_date) {
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
-                    ->where('status', 6)
-
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
+                    ->where('status', 6)
+                    ->whereHas('dispositions', function ($item) use ($user) {
+                        $item->whereHas('subSector', function ($q) use ($user) {
+                            $q->where('bagian_id', $user->bagian->bagian_id);
+                        });
+                    })
+
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->keyword && $request->start_date && $request->end_date) {
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
-                    ->where('status', 6)
-
+                    ->orWhere(
+                        function ($query) use ($request) {
+                            $query->where(
+                                'no_surat',
+                                'like',
+                                '%' . $request->keyword . '%'
+                            )
+                                ->orWhere(
+                                    'no_agenda',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                )
+                                ->orWhere(
+                                    'sumber_surat',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                )
+                                ->orWhere(
+                                    'perihal',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                )
+                                ->orWhere(
+                                    'klasifikasi',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                );
+                        }
+                    )
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
-                    ->where(
-                        'no_surat',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
-                        'no_agenda',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
-                        'sumber_surat',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
-                        'perihal',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
-                        'klasifikasi',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
+                    ->where('status', 6)
+                    ->whereHas('dispositions', function ($item) use ($user) {
+                        $item->whereHas('subSector', function ($q) use ($user) {
+                            $q->where('bagian_id', $user->bagian->bagian_id);
+                        });
+                    })
                     ->orderBy('created_at', 'desc')->get();
             } else {
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
                     ->where('status', 6)
+                    ->whereHas('dispositions', function ($item) use ($user) {
+                        $item->whereHas('subSector', function ($q) use ($user) {
+                            $q->where('bagian_id', $user->bagian->bagian_id);
+                        });
+                    })
                     ->orderBy('created_at', 'desc')->get();
             }
         }

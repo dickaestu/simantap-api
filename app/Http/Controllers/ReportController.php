@@ -146,6 +146,7 @@ class ReportController extends Controller
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->keyword && $request->start_date && $request->end_date) {
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                    ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->orWhere(
                         function ($query) use ($request) {
                             $query->where(
@@ -175,7 +176,6 @@ class ReportController extends Controller
                                 );
                         }
                     )
-                    ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->where('status', 6)
                     ->whereHas('dispositions', function ($item) use ($user) {
                         $item->whereHas('subSector', function ($q) use ($user) {

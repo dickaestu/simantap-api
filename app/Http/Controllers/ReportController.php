@@ -191,7 +191,6 @@ class ReportController extends Controller
         $user = JWTAuth::user();
         if ($request->keyword) {
             $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
-                ->where('status', 3)
                 ->orWhere(
                     function ($query) use ($request) {
                         $query->where(
@@ -212,21 +211,15 @@ class ReportController extends Controller
                             '%' . $request->keyword . '%'
                         );
                     }
-                )->whereHas('bagian', function ($item) use ($user) {
-                    $item->where('id', $user->bagian->bagian_id);
-                })->orderBy('created_at', 'desc')->get();
+                )->where('status', 3)->where('bagian_id', $user->bagian->bagian_id)->orderBy('created_at', 'desc')->get();
         } else if ($request->start_date && $request->end_date) {
             $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
-                ->where('status', 3)
                 ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
-                ->whereHas('bagian', function ($item) use ($user) {
-                    return $item->where('id', $user->bagian->bagian_id);
-                })
+                ->where('status', 3)
+                ->where('bagian_id', $user->bagian->bagian_id)
                 ->orderBy('created_at', 'desc')->get();
         } else if ($request->keyword && $request->start_date && $request->end_date) {
             $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
-                ->where('status', 3)
-                ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
 
                 ->orWhere(
                     function ($query) use ($request) {
@@ -249,16 +242,14 @@ class ReportController extends Controller
                         );
                     }
                 )
-                ->whereHas('bagian', function ($item) use ($user) {
-                    return $item->where('id', $user->bagian->bagian_id);
-                })
+                ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
+                ->where('status', 3)
+                ->where('bagian_id', $user->bagian->bagian_id)
                 ->orderBy('created_at', 'desc')->get();
         } else {
             $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
                 ->where('status', 3)
-                ->whereHas('bagian', function ($item) use ($user) {
-                    return $item->where('id', $user->bagian->bagian_id);
-                })
+                ->where('bagian_id', $user->bagian->bagian_id)
                 ->orderBy('created_at', 'desc')->get();
         }
 

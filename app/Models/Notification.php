@@ -16,8 +16,8 @@ class Notification extends Model
     public static function toSingleDevice($firebase)
     {
         $url = 'https://fcm.googleapis.com/fcm/send';
-        $key_authorization = env("FCM_SERVER_KEY");
-        $project_id = env("FCM_SENDER_ID");
+        $key_authorization = config('fcm.fcm_server_key');
+        $project_id = config('fcm.fcm_sender_id');
         $fields = [
             'to' => $firebase['token'],
             'notification' => [

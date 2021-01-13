@@ -166,7 +166,7 @@ return [
          * Package Service Providers...
          */
         Barryvdh\DomPDF\ServiceProvider::class,
-        // LaravelFCM\FCMServiceProvider::class,
+        LaravelFCM\FCMServiceProvider::class,
         /*
          * Application Service Providers...
          */

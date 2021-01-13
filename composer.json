@@ -9,7 +9,6 @@
     "license": "MIT",
     "require": {
         "php": "^7.2.5",
-        "apility/laravel-fcm": "^1.4",
         "barryvdh/laravel-dompdf": "^0.8.7",
         "doctrine/dbal": "^3.0",
         "fideloper/proxy": "^4.2",

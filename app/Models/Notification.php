@@ -3,10 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use LaravelFCM\Message\OptionsBuilder;
-use LaravelFCM\Message\PayloadDataBuilder;
-use LaravelFCM\Message\PayloadNotificationBuilder;
-use FCM;
 
 class Notification extends Model
 {
@@ -18,42 +14,37 @@ class Notification extends Model
 
     public static function toSingleDevice($firebase, $icon, $click_action)
     {
-        $optionBuilder = new OptionsBuilder();
-        $optionBuilder->setTimeToLive(60 * 20);
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $key_authorization = env("FCM_SERVER_KEY");
+        $project_id = env("FCM_SENDER_ID");
+        $fields = [
+            'to' => $firebase['token'],
+            'notification' => [
+                  'body' => $firebase['body'],
+                  'title' => $firebase['title']
+             ],
+            'data' => [
+                'id' => $firebase['data']['id'], 
+                'type' => $firebase['data']['type']
+            ],
+        ];
 
-        $notificationBuilder = new PayloadNotificationBuilder($firebase['title']);
-        $notificationBuilder->setBody($firebase['body'])
-            ->setSound('default')
-            ->setBadge(1)
-            ->setIcon($icon)
-            ->setClickAction($click_action)
-            ;
+        $fields_encode = json_encode ( $fields );
+        $headers = [
+            'Authorization:key='.$key_authorization,
+            'Content-Type:application/json',
+            'project_id' => $project_id
+        ];
 
-        $dataBuilder = new PayloadDataBuilder();
-        $dataBuilder->addData([
-            'type' => $firebase['data']['type'],
-            'id' => $firebase['data']['id']
-        ]);
+        $ch = curl_init();
+        curl_setopt( $ch, CURLOPT_URL, $url );
+        curl_setopt( $ch, CURLOPT_CUSTOMREQUEST,"POST");
+        curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers );
+        curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+        curl_setopt( $ch, CURLOPT_POSTFIELDS, $fields_encode );
 
-        $option = $optionBuilder->build();
-        $notification = $notificationBuilder->build();
-        $data = $dataBuilder->build();
-
-        $downstreamResponse = FCM::sendTo($firebase['token'], $option, $notification, $data);
-        $downstreamResponse->numberSuccess();
-        $downstreamResponse->numberFailure();
-        $downstreamResponse->numberModification();
-
-        // return Array - you must remove all this tokens in your database
-        $downstreamResponse->tokensToDelete();
-
-        // return Array (key : oldToken, value : new token - you must change the token in your database)
-        $downstreamResponse->tokensToModify();
-
-        // return Array - you should try to resend the message to the tokens in the array
-        $downstreamResponse->tokensToRetry();
-
-        // return Array (key:token, value:error) - in production you should remove from your database the tokens
-        $downstreamResponse->tokensWithError();
+        $out = curl_exec( $ch );
+        dd($out);
+        curl_close( $ch );
     }
 }

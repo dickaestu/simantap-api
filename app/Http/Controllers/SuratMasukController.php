@@ -371,8 +371,8 @@ class SuratMasukController extends Controller
             ];
 
             $notification = new Notification;
-            $notification->toSingleDevice($firebaseData);
-
+            $responseFirebase = $notification->toSingleDevice($firebaseData);
+            $response['fcm_result'] = $responseFirebase;
             if ($firebaseData['token']) {
                 NotificationController::store($message, $firebaseData['user_id']);
             }

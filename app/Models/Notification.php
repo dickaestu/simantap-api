@@ -48,5 +48,7 @@ class Notification extends Model
 
         $out = curl_exec($ch);
         curl_close($ch);
+
+        return $out;
     }
 }

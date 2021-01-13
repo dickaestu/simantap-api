@@ -301,10 +301,11 @@ class DisposisiSuratMasukController extends Controller
         //Send Notification to Firebase
         if($firebaseData['token']){
             $notification = new Notification;
-            $notification->toSingleDevice($firebaseData);
+            $responseFirebase = $notification->toSingleDevice($firebaseData);
             if($firebaseData['token']){
                 NotificationController::store($disposition, $firebaseData['user_id']);
             }
+            $response['fcm_result'] = $responseFirebase;
         }
 
         return response()->json($response, $status);

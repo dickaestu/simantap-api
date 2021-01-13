@@ -13,7 +13,7 @@ class Notification extends Model
         return $this->morphTo();
     }
 
-    public static function toSingleDevice($firebase, $icon, $click_action)
+    public static function toSingleDevice($firebase)
     {
         $url = 'https://fcm.googleapis.com/fcm/send';
         $key_authorization = env("FCM_SERVER_KEY");

@@ -301,7 +301,7 @@ class DisposisiSuratMasukController extends Controller
         //Send Notification to Firebase
         if($firebaseData['token']){
             $notification = new Notification;
-            $notification->toSingleDevice($firebaseData, null, null);
+            $notification->toSingleDevice($firebaseData);
             if($firebaseData['token']){
                 NotificationController::store($disposition, $firebaseData['user_id']);
             }

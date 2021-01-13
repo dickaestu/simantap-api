@@ -371,7 +371,7 @@ class SuratMasukController extends Controller
             ];
 
             $notification = new Notification;
-            $notification->toSingleDevice($firebaseData, null, null);
+            $notification->toSingleDevice($firebaseData);
 
             if ($firebaseData['token']) {
                 NotificationController::store($message, $firebaseData['user_id']);

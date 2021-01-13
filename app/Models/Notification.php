@@ -44,7 +44,6 @@ class Notification extends Model
         curl_setopt( $ch, CURLOPT_POSTFIELDS, $fields_encode );
 
         $out = curl_exec( $ch );
-        dd($out);
         curl_close( $ch );
     }
 }

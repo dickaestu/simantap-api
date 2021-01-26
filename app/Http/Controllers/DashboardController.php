@@ -20,7 +20,7 @@ class DashboardController extends Controller
             $start = Carbon::parse($request->start_date)->setTime(0, 0, 1);
             $end = Carbon::parse($request->end_date)->setTime(23, 59, 59);
         }
-
+        
         $user = JWTAuth::user();
 
         //Count Incoming message and Outcoming message, if seq > 1 specify from bagian
@@ -45,8 +45,8 @@ class DashboardController extends Controller
         }
 
         //Check Months
-        $diffInMonths = $start->diffInMonths($end);
-
+        $diffInMonths = $start->diffInMonths($end) + 1;
+        // dd($diffInMonths);
 
         //Generate Month List, example: 2021/01/12
         if ($diffInMonths == 0) {

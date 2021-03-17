@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class History extends Model
 {
     protected $fillable = [
-        'surat_masuk_id', 'status', 'sub_bagian_id'
+        'surat_id', 'status', 'sub_bagian_id', 'tipe_surat'
     ];
 
-    public function historable(){
+    public function historable()
+    {
         return $this->morphTo();
     }
 }

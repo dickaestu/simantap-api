@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Disposition;
+use App\Models\History;
+use App\Models\SubBagian;
 use App\Models\SuratKeluar;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Validator;
+use PDF;
 
 class DisposisiSuratKeluarController extends Controller
 {
@@ -15,25 +18,99 @@ class DisposisiSuratKeluarController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = JWTAuth::user();
-        $dispositions = Disposition::with('disposable')->where('disposable_type', 'App\Models\SuratKeluar')
-            ->whereHas('created_by', function ($item) use ($user) {
-                return $item->where('bagian_id', $user->bagian_id);
-            })->get();
+        $seq = $user->bagian->seq;
 
-        $mappingDispositions = $dispositions->map(function ($item) {
-            $item->tembusan = $item->sections()->get();
+        //Check Bagian
 
+        if ($request->keyword) {
+            if ($seq == 2) {
+                $dispositions = Disposition::with(['disposable.status_surat'])
+                ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
+                    return $item->where('status', '!=', 2)->where(
+                        'no_surat',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    )->orWhere(
+                        'no_agenda',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    )->orWhere(
+                        'perihal',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    )->orWhere(
+                        'klasifikasi',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    );
+                })
+                    ->get();
+            } else {
+                $dispositions = Disposition::with(['disposable.status_surat'])
+                ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
+                    $item->where('status', '!=', 2)->where(
+                        'no_surat',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    )->orWhere(
+                        'no_agenda',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    )
+                        ->orWhere(
+                            'perihal',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )
+                        ->orWhere(
+                            'klasifikasi',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        );
+                })
+                    ->where('kepada', $user->sub_bagian_id)->get();
+            }
+        } else {
+            if ($seq == 2) {
+                $dispositions = Disposition::with(['disposable.status_surat'])
+                ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) {
+                    $item->where('status', '!=', 2);
+                })
+                    ->get();
+            } else {
+                $dispositions = Disposition::with(['disposable.status_surat'])
+                ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) {
+                    $item->where('status', '!=', 2);
+                })
+                    ->where('kepada', $user->sub_bagian_id)->get();
+            }
+        }
+
+        $mappingDisposition = $dispositions->map(function ($item) {
+            $item->disposable->file_path =
+                'https://api.simantap.ngampooz.com/files/surat_masuk/' .  $item->disposable->file;
             return $item;
         });
 
+
+
+
+
+        // $mappingDispositions = $dispositions->map(function ($item) {
+        //     $item->tembusan = $item->sections()->get();
+
+        //     return $item;
+        // });
+
         return response()->json([
-            'message' => 'Success',
-            'data' => $mappingDispositions
+            'message' => 'fetched successfully',
+            'data' => $dispositions
         ], 200);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -54,44 +131,81 @@ class DisposisiSuratKeluarController extends Controller
     public function store(Request $request, $suratId)
     {
         $user = JWTAuth::user();
+        $seq = $user->bagian->seq;
+
+        $incomingMessage = SuratKeluar::FindOrFail($suratId);
+
+
         $validator = Validator::make($request->all(), [
             'kepada'  => 'required|numeric',
-            'catatan' => 'required',
+            'isi_disposisi' => 'nullable',
         ]);
 
-        $status = "error";
-        $message = "";
-        $code = 400;
-
         if ($validator->fails()) {
-            $errors = $validator->errors();
-            $message = $errors;
+            $response = [
+                'message' => 'Error Validation',
+                'errors'  => $validator->messages()
+            ];
+            $status = 422;
         } else {
-            $outcomingMessage = SuratKeluar::FindOrFail($suratId);
-            $disposition = $outcomingMessage->dispositions()->create([
+            $response = null;
+            $status = null;
+            $incomingMessage->update(['status' => 2]);
+
+            $disposition = $incomingMessage->dispositions()->create([
                 'kepada'  => $request->kepada,
-                'catatan' => $request->catatan,
+                'isi_disposisi' => $request->isi_disposisi,
                 'created_by' => $user->id
             ]);
-            $outcomingMessage->update([
-                'status' => 'disposisi'
-            ]);
 
-            if ($tembusan = $request->tembusan) {
-                $disposition->sections()->sync($tembusan);
-            }
-            if ($disposition) {
-                $status = "success";
-                $message = "Data berhasil dibuat";
-                $code = 200;
-            } else {
-                $message = 'Failed';
-            }
+            //Get token firebase from user
+            $body = $this->createStatus($disposition, $incomingMessage, $request->kepada, $seq, $user);
+            // $subBagian = SubBagian::FindOrFail($request->kepada);
+            // $firebaseData = [
+            //     'token' => $subBagian->users()->where('roles_id', 2)->first()->device_token ?? null,
+            //     'user_id' => $subBagian->users()->where('roles_id', 2)->first()->id,
+            //     'body' => $body,
+            //     'data' => [
+            //         'id' => $disposition->id,
+            //         'type' => 'disposition'
+            //     ],
+            //     'title' => '1 pekerjaan telah masuk.'
+            // ];
+            // if ($tembusan = $request->tembusan) {
+            //     $disposition->sections()->sync($tembusan);
+            // }
+
+            //Send Notification to Firebase
+            // if ($firebaseData['token']) {
+            //     $notification = new Notification;
+            //     $notification->toSingleDevice($firebaseData, null, null);
+            //     if ($firebaseData['token']) {
+            //         NotificationController::store($disposition, $firebaseData['user_id']);
+            //     }
+            // }
+
+            $response = [
+                'message' => 'Stored Successfully',
+            ];
+            $status = 201;
         }
-        return response()->json([
-            'status' => $status,
-            'message' => $message,
-        ], $code);
+
+        return response()->json($response, $status);
+    }
+
+    function createStatus($disposition, $incomingMessage, $kepada, $seq, $user)
+    {
+        $subBagian = SubBagian::FindOrFail($kepada);
+
+        $disposition->history()->create([
+            'status' => 'Surat di disposisi oleh KASI ke ' . $subBagian->nama,
+            'surat_id' => $incomingMessage->id,
+            'tipe_surat' => "keluar"
+        ]);
+        $body = 'Disposisi surat, Nomor Agenda: ' . $incomingMessage->no_agenda;
+
+
+        return $body;
     }
 
     /**
@@ -126,43 +240,52 @@ class DisposisiSuratKeluarController extends Controller
     public function update(Request $request, $id)
     {
         $user = JWTAuth::user();
+        $seq = $user->bagian->seq;
         $validator = Validator::make($request->all(), [
             'kepada'  => 'required|numeric',
-            'catatan' => 'required',
+            'isi_disposisi' => 'nullable',
         ]);
 
-        $status = "error";
-        $message = "";
-        $code = 400;
-
         if ($validator->fails()) {
-            $errors = $validator->errors();
-            $message = $errors;
+            $response = [
+                'message' => 'Error Validation',
+                'errors'  => $validator->messages()
+            ];
+            $status = 422;
         } else {
             $disposition = Disposition::FindOrFail($id);
+
+            if ($disposition->kepada != $request->kepada) {
+                $this->updateStatus($disposition, $request->kepada, $seq, $user);
+            }
             $disposition->update([
                 'kepada'  => $request->kepada,
-                'catatan' => $request->catatan,
+                'isi_disposisi' => $request->isi_disposisi,
                 'updated_by' => $user->id
             ]);
 
-            if ($tembusan = $request->tembusan) {
-                $disposition->sections()->sync($tembusan);
-            }
-            if ($disposition) {
-                $status = "success";
-                $message = "Data berhasil diupdate";
-                $code = 200;
-            } else {
-                $message = 'Failed';
-            }
+
+            // if ($tembusan = $request->tembusan) {
+            //     $disposition->sections()->sync($tembusan);
+            // }
+
+            $response = [
+                'message' => 'updated Successfully',
+            ];
+            $status = 201;
         }
-        return response()->json([
-            'status' => $status,
-            'message' => $message,
-        ], $code);
+
+        return response()->json($response, $status);
     }
 
+    function updateStatus($disposition, $kepada, $seq, $user)
+    {
+        $subBagian = SubBagian::FindOrFail($kepada);
+
+        $disposition->history()->update([
+            'status' => 'Surat di disposisi oleh KASI ke  ' . $subBagian->nama,
+        ]);
+    }
     /**
      * Remove the specified resource from storage.
      *
@@ -171,12 +294,82 @@ class DisposisiSuratKeluarController extends Controller
      */
     public function destroy($id)
     {
-        $disposition = Disposition::findOrFail($id);
-        $disposition->sections()->sync([]);
-        $disposition->delete();
+        $disposition = Disposition::FindOrFail($id);
+
+        if ($disposition) {
+            // $disposition->sections()->sync([]);
+            $disposition->history()->delete();
+            $disposition->delete();
+            $response = [
+                'message' => 'deleted Successfully',
+            ];
+            $status = 200;
+        } else {
+            $response = [
+                'message' => 'not found.',
+            ];
+            $status = 404;
+        }
+
+        return response()->json($response, $status);
+    }
+
+    public function cetakDisposisi($id, $response)
+    {
+        $disposition = Disposition::FindOrFail($id);
+        $subSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', 3)->get();
+
+
+        $pdf = PDF::loadView('templates.disposition', [
+            'disposition' => $disposition,
+            'subSections' => $subSections,
+        ]);
+
+
+        if ($response == 'view') {
+            return $pdf->stream();
+        } else {
+            return $pdf->download('disposisi_surat_keluar-' . $disposition->id . '.pdf');
+        }
+    }
+
+    public function disposisi()
+    {
+        $user = JWTAuth::user();
+
+        $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', 3)->get();
+
         return response()->json([
-            'status' => 'success',
-            'message' => 'Data berhasil dihapus',
+            'message' => 'fetched all successfully.',
+            'data' => $subSections
+        ], 200);
+    }
+
+    public function history($suratId)
+    {
+        $user = JWTAuth::user();
+
+        $data = History::with(['historable'])->where('surat_id', $suratId)->orderBy('created_at', 'asc')->get();
+
+        $mappingData = $data->map(function ($item) {
+            switch ($item->historable_type) {
+                case "App\Models\SuratKeluar":
+                    $item->url =
+                        'https://api.simantap.ngampooz.com/files/surat_keluar/'  . $item->historable->file;
+                    break;
+                case "App\Models\Disposition":
+                    $item->url = null;
+                    break;
+                case "App\Models\StaffminFile":
+                    $item->url = 'https://api.simantap.ngampooz.com/files/staff_min/' . $item->historable->file;
+                    break;
+            }
+            return $item;
+        });
+
+        return response()->json([
+            'status' => 'Success',
+            'data' => $mappingData
         ], 200);
     }
 }

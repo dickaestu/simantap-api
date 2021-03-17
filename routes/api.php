@@ -66,7 +66,7 @@ Route::resource('/paur/user', 'PaurController')->middleware(['jwt.auth', 'beyond
 */
 
 Route::group(['prefix' => '/surat-masuk', 'middleware' => 'jwt.auth'], function () {
-    // Route::get('/disposisi/{disposisi}/{response}', 'DisposisiSuratMasukController@cetakDisposisi');
+    Route::get('/disposisi/{disposisi}/{response}', 'DisposisiSuratMasukController@cetakDisposisi');
     Route::get('/history/{surat}', 'DisposisiSuratMasukController@history');
     Route::get('/disposisi', 'DisposisiSuratMasukController@index');
     Route::post('{surat}/disposisi', 'DisposisiSuratMasukController@store');
@@ -75,7 +75,6 @@ Route::group(['prefix' => '/surat-masuk', 'middleware' => 'jwt.auth'], function 
     Route::put('/disposisi/{disposisi}', 'DisposisiSuratMasukController@update');
     Route::delete('/disposisi/{disposisi}', 'DisposisiSuratMasukController@destroy');
 });
-Route::get('/surat-masuk/disposisi/{disposisi}/{response}', 'DisposisiSuratMasukController@cetakDisposisi');
 
 
 /*
@@ -90,6 +89,8 @@ Route::group(['prefix' => '/surat-keluar', 'middleware' => 'jwt.auth'], function
     Route::get('/disposisi/{disposisi}', 'DisposisiSuratKeluarController@show');
     Route::put('/disposisi/{disposisi}', 'DisposisiSuratKeluarController@update');
     Route::delete('/disposisi/{disposisi}', 'DisposisiSuratKeluarController@destroy');
+    Route::get('/disposisi/{disposisi}/{response}', 'DisposisiSuratKeluarController@cetakDisposisi');
+    Route::get('/disposisi/users', 'DisposisiSuratKeluarController@disposisi');
 });
 
 /*

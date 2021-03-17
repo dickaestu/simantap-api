@@ -9,13 +9,26 @@ class SuratKeluar extends Model
     protected $table = 'surat_keluar';
 
     protected $fillable = [
-        'no_surat', 'tanggal_surat', 'pengolah', 'tujuan_surat',
-        'perihal', 'keterangan', 'path', 'status', 'file', 'created_by', 'updated_by', 'bagian_id'
+        'no_agenda',
+        'no_surat',
+        'tanggal_surat',
+        'tanggal_terima',
+        'perihal',
+        'file',
+        'status',
+        'created_by',
+        'updated_by',
+        'klasifikasi'
     ];
 
     public function dispositions()
     {
         return $this->morphOne('App\Models\Disposition', 'disposable');
+    }
+
+    public function history()
+    {
+        return $this->morphOne('App\Models\History', 'historable');
     }
 
     public function status_surat()
@@ -28,7 +41,7 @@ class SuratKeluar extends Model
         return $this->belongsTo('App\Models\Bagian', 'bagian_id');
     }
 
-    public function created_by()
+    public function user_created_by()
     {
         return $this->belongsTo('App\Models\User', 'created_by');
     }

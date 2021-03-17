@@ -29,7 +29,7 @@ class SuratMasukController extends Controller
         $seq = $user->bagian->seq;
         if ($seq === 2) {
             if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
-                $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->where('status', '!=', 2)
 
                     ->where(
@@ -93,7 +93,7 @@ class SuratMasukController extends Controller
             }
         } else {
             if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
-                $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->orWhere(
                         function ($query) use ($request) {
                             $query->where(
@@ -119,26 +119,14 @@ class SuratMasukController extends Controller
                         }
                     )
                     ->where('status', '!=', 2)
-                    ->whereHas('dispositions', function ($item) use ($user) {
-                        $item->whereHas('subSector', function ($q) use ($user) {
-                            $q->where('bagian_id', $user->bagian->bagian_id);
-                        });
-                    })
-                    ->orderBy('created_at', 'desc')->get();
-            } else if ($request->start_date && $request->end_date) {
-                $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
-                    ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
-                    ->where('status', '!=', 2)
-                    ->whereHas('dispositions', function ($item) use ($user) {
-                        $item->whereHas('subSector', function ($q) use ($user) {
-                            $q->where('bagian_id', $user->bagian->bagian_id);
-                        });
-                    })
-
+                    ->where('created_by', $user->id)
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->keyword && $request->start_date && $request->end_date) {
-                $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+
+                $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
+                    ->where('created_by', $user->id)
+
                     ->orWhere(
                         function ($query) use ($request) {
                             $query->where(
@@ -164,20 +152,18 @@ class SuratMasukController extends Controller
                         }
                     )
                     ->where('status', '!=', 2)
-                    ->whereHas('dispositions', function ($item) use ($user) {
-                        $item->whereHas('subSector', function ($q) use ($user) {
-                            $q->where('bagian_id', $user->bagian->bagian_id);
-                        });
-                    })
+                    ->orderBy('created_at', 'desc')->get();
+            } else if ($request->start_date && $request->end_date) {
+
+                $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
+                    ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
+                    ->where('status', '!=', 2)
+                    ->where('created_by', $user->id)
                     ->orderBy('created_at', 'desc')->get();
             } else {
-                $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->where('status', '!=', 2)
-                    ->whereHas('dispositions', function ($item) use ($user) {
-                        $item->whereHas('subSector', function ($q) use ($user) {
-                            $q->where('bagian_id', $user->bagian->bagian_id);
-                        });
-                    })
+                    ->where('created_by', $user->id)
                     ->orderBy('created_at', 'desc')->get();
             }
         }
@@ -288,7 +274,7 @@ class SuratMasukController extends Controller
             'tanggal_surat' => 'required|date',
             'tanggal_terima' => 'required|date',
             'perihal' => 'required|string|max:255',
-            'file.*' => 'required|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
+            'file.*' => 'nullable|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
             'klasifikasi' => 'required'
         ]);
 
@@ -299,11 +285,14 @@ class SuratMasukController extends Controller
             ];
             $status = 422;
         } else {
-            $file = $request->file('file');
+            if ($request->file) {
+                $file = $request->file('file');
 
-            $fileName = time() . '_' . $file->getClientOriginalName();
+                $fileName = time() . '_' . $file->getClientOriginalName();
 
-            $file->move('files/surat_masuk', $fileName);
+                $file->move('files/surat_masuk', $fileName);
+            }
+
 
             $surat = $this->generateSurat($request->klasifikasi);
 
@@ -313,7 +302,7 @@ class SuratMasukController extends Controller
                 'tanggal_surat' => $request->tanggal_surat,
                 'tanggal_terima' => $request->tanggal_terima,
                 'perihal' => $request->perihal,
-                'file' => $fileName,
+                'file' => $fileName ?? null,
                 'created_by' => $user->id,
                 'klasifikasi' => $request->klasifikasi,
                 'status' => 1
@@ -321,7 +310,8 @@ class SuratMasukController extends Controller
 
             $message->history()->create([
                 'status' => 'Surat Masuk dibuat ' . $user->name,
-                'surat_masuk_id' => $message->id
+                'surat_id' => $message->id,
+                'tipe_surat' => 'masuk'
             ]);
 
             // $userReceiveNotif = User::where('roles_id', 2)->where('sub_bagian_id', 1)->first();

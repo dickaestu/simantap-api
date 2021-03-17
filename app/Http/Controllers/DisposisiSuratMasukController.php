@@ -30,19 +30,15 @@ class DisposisiSuratMasukController extends Controller
         //Check Bagian
 
         if ($request->keyword) {
-            if ($seq == 1) {
+            if ($seq == 2) {
                 $dispositions = Disposition::with(['disposable.status_surat'])
                     ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
-                        return $item->where('status', '!=', 6)->where(
+                        return $item->where('status', '!=', 2)->where(
                             'no_surat',
                             'like',
                             '%' . $request->keyword . '%'
                         )->orWhere(
                             'no_agenda',
-                            'like',
-                            '%' . $request->keyword . '%'
-                        )->orWhere(
-                            'sumber_surat',
                             'like',
                             '%' . $request->keyword . '%'
                         )->orWhere(
@@ -56,47 +52,15 @@ class DisposisiSuratMasukController extends Controller
                         );
                     })
                     ->get();
-            } else if ($seq == 5) {
-                $dispositions = Disposition::with(['disposable.status_surat'])
-                    ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
-                        $item->where('status', '!=', 6)->where(
-                            'no_surat',
-                            'like',
-                            '%' . $request->keyword . '%'
-                        )->orWhere(
-                            'no_agenda',
-                            'like',
-                            '%' . $request->keyword . '%'
-                        )->orWhere(
-                            'sumber_surat',
-                            'like',
-                            '%' . $request->keyword . '%'
-                        )
-                            ->orWhere(
-                                'perihal',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            )
-                            ->orWhere(
-                                'klasifikasi',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            );
-                    })
-                    ->where('user_id', $user->id)->where('kepada', $user->sub_bagian_id)->get();
             } else {
                 $dispositions = Disposition::with(['disposable.status_surat'])
                     ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
-                        $item->where('status', '!=', 6)->where(
+                        $item->where('status', '!=', 2)->where(
                             'no_surat',
                             'like',
                             '%' . $request->keyword . '%'
                         )->orWhere(
                             'no_agenda',
-                            'like',
-                            '%' . $request->keyword . '%'
-                        )->orWhere(
-                            'sumber_surat',
                             'like',
                             '%' . $request->keyword . '%'
                         )
@@ -114,22 +78,16 @@ class DisposisiSuratMasukController extends Controller
                     ->where('kepada', $user->sub_bagian_id)->get();
             }
         } else {
-            if ($seq == 1) {
+            if ($seq == 2) {
                 $dispositions = Disposition::with(['disposable.status_surat'])
                     ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) {
-                        $item->where('status', '!=', 6);
+                        $item->where('status', '!=', 2);
                     })
                     ->get();
-            } else if ($seq == 5) {
-                $dispositions = Disposition::with(['disposable.status_surat'])
-                    ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) {
-                        $item->where('status', '!=', 6);
-                    })
-                    ->where('user_id', $user->id)->where('kepada', $user->sub_bagian_id)->get();
             } else {
                 $dispositions = Disposition::with(['disposable.status_surat'])
                     ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) {
-                        $item->where('status', '!=', 6);
+                        $item->where('status', '!=', 2);
                     })
                     ->where('kepada', $user->sub_bagian_id)->get();
             }
@@ -194,7 +152,7 @@ class DisposisiSuratMasukController extends Controller
             ]);
 
             //Get token firebase from user
-            // $body = $this->createStatus($disposition, $incomingMessage, $request->kepada, $seq, $user);
+            $body = $this->createStatus($disposition, $incomingMessage, $request->kepada, $seq, $user);
             // $subBagian = SubBagian::FindOrFail($request->kepada);
             // $firebaseData = [
             //     'token' => $subBagian->users()->where('roles_id', 2)->first()->device_token ?? null,
@@ -231,24 +189,14 @@ class DisposisiSuratMasukController extends Controller
     function createStatus($disposition, $incomingMessage, $kepada, $seq, $user)
     {
         $subBagian = SubBagian::FindOrFail($kepada);
-        $bagian = $user->bagian;
-        switch ($seq) {
-            case 1:
-                $disposition->history()->create([
-                    'status' => 'Surat di disposisi oleh Karo ke ' . $subBagian->nama,
-                    'surat_masuk_id' => $incomingMessage->id
-                ]);
-                $body = 'Disposisi surat, Nomor Surat: ' . $incomingMessage->no_agenda;
-                break;
 
-            default:
-                $disposition->history()->create([
-                    'status' => $bagian->nama  . ' mendisposisikan ke bagian ' . $subBagian->nama,
-                    'surat_masuk_id' => $incomingMessage->id
-                ]);
-                $body = 'Disposisi surat dari' . ucwords($bagian->nama) . 'Nomor Surat: ' . $incomingMessage->no_agenda;
-                break;
-        }
+        $disposition->history()->create([
+            'status' => 'Surat di disposisi oleh KASI ke ' . $subBagian->nama,
+            'surat_id' => $incomingMessage->id,
+            'tipe_surat' => "masuk"
+        ]);
+        $body = 'Disposisi surat, Nomor Agenda: ' . $incomingMessage->no_agenda;
+
 
         return $body;
     }
@@ -337,20 +285,10 @@ class DisposisiSuratMasukController extends Controller
     function updateStatus($disposition, $kepada, $seq, $user)
     {
         $subBagian = SubBagian::FindOrFail($kepada);
-        $bagian = $user->bagian;
-        switch ($seq) {
-            case 1:
-                $disposition->history()->update([
-                    'status' => 'Surat di disposisi ke ' . $subBagian->nama,
-                ]);
-                break;
 
-            default:
-                $disposition->history()->update([
-                    'status' => $bagian->nama  . 'mendisposisikan ke bagian ' . $subBagian->nama,
-                ]);
-                break;
-        }
+        $disposition->history()->update([
+            'status' => 'Surat di disposisi oleh KASI ke  ' . $subBagian->nama,
+        ]);
     }
 
     /**
@@ -403,27 +341,8 @@ class DisposisiSuratMasukController extends Controller
     public function disposisi()
     {
         $user = JWTAuth::user();
-        $seq = $user->bagian->seq;
 
-        //Jika karo
-        if ($seq == 1) {
-            $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->get();
-        } else {
-            //jika merupakan kaur
-            if ($seq == 4) {
-                $subSection = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')
-                    ->where('seq', $seq + 1)
-                    ->where('bagian_id', $user->bagian->bagian_id)->where(
-                        'atasan',
-                        $user->sub_bagian_id
-                    )->first();
-                $subSections = $subSection->users;
-            } else {
-                $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')
-                    ->where('seq', $seq + 1)
-                    ->where('bagian_id', $user->bagian->bagian_id)->get();
-            }
-        }
+        $subSections = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', 3)->get();
 
         return response()->json([
             'message' => 'fetched all successfully.',
@@ -435,7 +354,7 @@ class DisposisiSuratMasukController extends Controller
     {
         $user = JWTAuth::user();
 
-        $data = History::with(['historable'])->where('surat_masuk_id', $suratId)->orderBy('created_at', 'asc')->get();
+        $data = History::with(['historable'])->where('surat_id', $suratId)->orderBy('created_at', 'asc')->get();
 
         $mappingData = $data->map(function ($item) {
             switch ($item->historable_type) {

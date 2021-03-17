@@ -110,13 +110,13 @@ class SuratKeluarController extends Controller
                         }
                     )->where('status', 2)->where('bagian_id', $user->bagian->bagian_id)->orderBy('created_at', 'desc')->get();
             } else if ($request->start_date && $request->end_date) {
-                $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
+                $data = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat', 'bagian'])
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->where('status', 2)
                     ->where('bagian_id', $user->bagian->bagian_id)
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->keyword && $request->start_date && $request->end_date) {
-                $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
+                $data = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat', 'bagian'])
                     ->orWhere(
                         function ($query) use ($request) {
                             $query->where(
@@ -143,7 +143,7 @@ class SuratKeluarController extends Controller
                     ->where('bagian_id', $user->bagian->bagian_id)
                     ->orderBy('created_at', 'desc')->get();
             } else {
-                $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
+                $data = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat', 'bagian'])
                     ->where('status', 2)
                     ->where('bagian_id', $user->bagian->bagian_id)
                     ->orderBy('created_at', 'desc')->get();
@@ -174,53 +174,89 @@ class SuratKeluarController extends Controller
     {
         $user = JWTAuth::user();
         $validator = Validator::make($request->all(), [
-            'no_surat' => 'required|string|max:50|unique:surat_keluar',
+            'no_agenda' => 'required|string|max:50|unique:surat_keluar',
             'tanggal_surat' => 'required|date',
-            'pengolah' => 'required|string|max:255',
-            'tujuan_surat' => 'required|string|max:255',
+            'tanggal_terima' => 'required|date',
             'perihal' => 'required|string|max:255',
-            'file' => 'required|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
-            'keterangan' => 'nullable',
+            'file.*' => 'nullable|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
+            'klasifikasi' => 'required'
         ]);
 
-        $status = "error";
-        $message = "";
-        $data = null;
-        $code = 400;
-
         if ($validator->fails()) {
-            $errors = $validator->errors();
-            $message = $errors;
+            $response = [
+                'message' => 'Error Validation',
+                'errors'  => $validator->messages()
+            ];
+            $status = 422;
         } else {
-            $file = $request->file('file');
+            if ($request->file) {
+                $file = $request->file('file');
 
-            $fileName = now()->toDateString() . '_' . $file->getClientOriginalName();
-            $file->move('files/surat_keluar/', $fileName);
-            $surat_keluar = SuratKeluar::create([
-                'no_surat' => $request->no_surat,
-                'tanggal_surat' => $request->tanggal_surat,
-                'pengolah' => $request->pengolah,
-                'tujuan_surat' => $request->tujuan_surat,
-                'perihal' => $request->perihal,
-                'keterangan' => $request->keterangan,
-                'file' => $fileName,
-                'created_by' => $user->id,
-                'bagian_id' => $user->bagian->bagian_id
-            ]);
-            if ($surat_keluar) {
-                $status = "success";
-                $message = "Data berhasil dibuat";
-                $data = $surat_keluar;
-                $code = 200;
-            } else {
-                $message = 'Failed';
+                $fileName = time() . '_' . $file->getClientOriginalName();
+
+                $file->move('files/surat_keluar', $fileName);
             }
+
+            $surat = $this->generateSurat($request->klasifikasi);
+
+            $message = SuratKeluar::create([
+                'no_surat' => $surat,
+                'no_agenda' => $request->no_agenda,
+                'tanggal_surat' => $request->tanggal_surat,
+                'tanggal_terima' => $request->tanggal_terima,
+                'perihal' => $request->perihal,
+                'file' => $fileName ?? null,
+                'created_by' => $user->id,
+                'klasifikasi' => $request->klasifikasi,
+                'status' => 1
+            ]);
+
+            $message->history()->create([
+                'status' => 'Surat Keluar dibuat ' . $user->name,
+                'surat_id' => $message->id,
+                'tipe_surat' => "keluar"
+            ]);
+
+            // $userReceiveNotif = User::where('roles_id', 2)->where('sub_bagian_id', 1)->first();
+            // //Set FirebaseData for Send Notification
+            // $firebaseData = [
+            //     'token' => $userReceiveNotif->device_token ?? null,
+            //     'user_id' => $userReceiveNotif->id,
+            //     'body' => 'Terdapat surat masuk dengan nomor surat :' . $message->no_surat,
+            //     'data' => [
+            //         'id' => $message->id,
+            //         'type' => 'surat_masuk'
+            //     ],
+            //     'title' => 'Surat masuk telah diterima'
+            // ];
+
+            // $notification = new Notification;
+            // $notification->toSingleDevice($firebaseData, null, null);
+
+            // if ($firebaseData['token']) {
+            //     NotificationController::store($message, $firebaseData['user_id']);
+            // }
+            $response = [
+                'message' => 'stored successfully'
+            ];
+            $status = 201;
         }
-        return response()->json([
-            'status' => $status,
-            'message' => $message,
-            'data' => $data
-        ], $code);
+
+        return response()->json($response, $status);
+    }
+
+    function generateSurat($classification)
+    {
+        $code = strtoupper($classification[0]);
+        $message = SuratKeluar::where('klasifikasi', $classification)->latest()->first();
+        if ($message) {
+            $explode = explode('-', $message->no_surat);
+            $no_surat = $code . "-" . sprintf('%05d', ($explode[1] + 1));
+        } else {
+            $no_surat = $code . "-" . sprintf('%05d', 1);
+        }
+
+        return $no_surat;
     }
 
 
@@ -233,58 +269,48 @@ class SuratKeluarController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $item = SuratKeluar::findOrFail($id);
         $user = JWTAuth::user();
+        $message = SuratKeluar::FindOrFail($id);
         $validator = Validator::make($request->all(), [
-            'no_surat' => 'required|string|max:50|unique:surat_keluar,no_surat,' . $item->id,
+            'no_agenda' => 'required|string|max:50|unique:surat_keluar,no_agenda,' . $message->id,
             'tanggal_surat' => 'required|date',
-            'pengolah' => 'required|string|max:255',
-            'tujuan_surat' => 'required|string|max:255',
+            'tanggal_terima' => 'required|date',
             'perihal' => 'required|string|max:255',
-            'file' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
-            'keterangan' => 'nullable',
+            'file.*' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
+
         ]);
 
-        $status = "error";
-        $message = "";
-        $data = null;
-        $code = 400;
-
         if ($validator->fails()) {
-            $errors = $validator->errors();
-            $message = $errors;
+            $response = [
+                'message' => 'Error Validation',
+                'errors'  => $validator->messages()
+            ];
+            $status = 422;
         } else {
             if ($request->file) {
                 $file = $request->file('file');
 
-                $fileName = now()->toDateString() . '_' . $file->getClientOriginalName();
-                File::delete('files/surat_keluar/' . $item->file);
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                File::delete('files/surat_keluar/' . $message->file);
                 $file->move('files/surat_keluar/', $fileName);
             }
-            $surat_keluar = $item->update([
-                'no_surat' => $request->no_surat,
+
+            $message->update([
+                'no_agenda' => $request->no_agenda,
                 'tanggal_surat' => $request->tanggal_surat,
-                'pengolah' => $request->pengolah,
-                'tujuan_surat' => $request->tujuan_surat,
+                'tanggal_terima' => $request->tanggal_terima,
+                'file' => $fileName ?? $message->file,
                 'perihal' => $request->perihal,
-                'keterangan' => $request->keterangan,
-                'file' => $fileName ?? $item->file,
-                'updated_by' => $user->id
+                'updated_by' => $user->id,
             ]);
-            if ($surat_keluar) {
-                $status = "success";
-                $message = "Data berhasil diupdate";
-                $data = $surat_keluar;
-                $code = 200;
-            } else {
-                $message = 'Failed';
-            }
+
+            $response = [
+                'message' => 'updated successfully'
+            ];
+            $status = 200;
         }
-        return response()->json([
-            'status' => $status,
-            'message' => $message,
-            'data' => $data
-        ], $code);
+
+        return response()->json($response, $status);
     }
 
     /**

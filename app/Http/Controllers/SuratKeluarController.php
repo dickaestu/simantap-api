@@ -21,145 +21,248 @@ class SuratKeluarController extends Controller
     {
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
-
-        if ($seq == 5 || $seq == 4) {
+        if ($seq === 2) {
             if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
-                $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
+                $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
+                    ->where(
+                        'no_agenda',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    )
                     ->orWhere(
-                        function ($query) use ($request) {
-                            $query->where(
-                                'pengolah',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            )->orWhere(
-                                'tujuan_surat',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            )->orWhere(
-                                'perihal',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            )->orWhere(
-                                'no_surat',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            );
-                        }
-                    )->where('status', '<', 3)->where('bagian_id', $user->bagian->bagian_id)->orderBy('created_at', 'desc')->get();
-            } else if ($request->start_date && $request->end_date) {
-                $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
+                        'no_surat',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    )
+                    ->orWhere(
+                        'perihal',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    )
+                    ->orWhere(
+                        'klasifikasi',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    )
+                    ->where('status', '!=', 2)
+                    ->orderBy('created_at', 'desc')->get();
+            } else if (!$request->keyword && $request->start_date && $request->end_date) {
+                $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
+                    ->where('status', '!=', 2)
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
-                    ->where('status', '<', 3)
-                    ->where('bagian_id', $user->bagian->bagian_id)
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->keyword && $request->start_date && $request->end_date) {
-                $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
-                    ->orWhere(
-                        function ($query) use ($request) {
-                            $query->where(
-                                'pengolah',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            )->orWhere(
-                                'tujuan_surat',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            )->orWhere(
-                                'perihal',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            )->orWhere(
-                                'no_surat',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            );
-                        }
-                    )
+                $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
-                    ->where('status', '<', 3)
-                    ->where('bagian_id', $user->bagian->bagian_id)
+                    ->where(
+                        'no_agenda',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    )
+                    ->orWhere(
+                        'no_surat',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    )
+
+                    ->orWhere(
+                        'perihal',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    )
+                    ->orWhere(
+                        'klasifikasi',
+                        'like',
+                        '%' . $request->keyword . '%'
+                    )
+                    ->where('status', '!=', 2)
                     ->orderBy('created_at', 'desc')->get();
             } else {
-                $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
-                    ->where('status', '<', 3)
-                    ->where('bagian_id', $user->bagian->bagian_id)
+                $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
+                    ->where('status', '!=', 2)
                     ->orderBy('created_at', 'desc')->get();
             }
-        } else if ($seq == 3) {
+            //Seq 3
+        } else {
             if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
-                $data = SuratKeluar::with(['created_by', 'updated_by', 'status_surat', 'bagian'])
+                $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->orWhere(
                         function ($query) use ($request) {
                             $query->where(
-                                'pengolah',
+                                'no_agenda',
                                 'like',
                                 '%' . $request->keyword . '%'
-                            )->orWhere(
-                                'tujuan_surat',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            )->orWhere(
-                                'perihal',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            )->orWhere(
-                                'no_surat',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            );
-                        }
-                    )->where('status', 2)->where('bagian_id', $user->bagian->bagian_id)->orderBy('created_at', 'desc')->get();
-            } else if ($request->start_date && $request->end_date) {
-                $data = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat', 'bagian'])
-                    ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
-                    ->where('status', 2)
-                    ->where('bagian_id', $user->bagian->bagian_id)
-                    ->orderBy('created_at', 'desc')->get();
-            } else if ($request->keyword && $request->start_date && $request->end_date) {
-                $data = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat', 'bagian'])
-                    ->orWhere(
-                        function ($query) use ($request) {
-                            $query->where(
-                                'pengolah',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            )->orWhere(
-                                'tujuan_surat',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            )->orWhere(
-                                'perihal',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            )->orWhere(
-                                'no_surat',
-                                'like',
-                                '%' . $request->keyword . '%'
-                            );
+                            )
+                                ->orWhere(
+                                    'no_surat',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                )
+                                ->orWhere(
+                                    'perihal',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                )
+                                ->orWhere(
+                                    'klasifikasi',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                );
                         }
                     )
+                    ->where('status', '!=', 2)
+                    ->where('created_by', $user->id)
+                    ->orderBy('created_at', 'desc')->get();
+            } else if ($request->keyword && $request->start_date && $request->end_date) {               
+                $messages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
+                    ->where('created_by', $user->id)
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
-                    ->where('status', 2)
-                    ->where('bagian_id', $user->bagian->bagian_id)
+                    ->orWhere(
+                        function ($query) use ($request) {
+                            $query->where(
+                                'no_agenda',
+                                'like',
+                                '%' . $request->keyword . '%'
+                            )
+                                ->orWhere(
+                                    'no_surat',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                )
+                                ->orWhere(
+                                    'perihal',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                )
+                                ->orWhere(
+                                    'klasifikasi',
+                                    'like',
+                                    '%' . $request->keyword . '%'
+                                );
+                        }
+                    )
+                    ->where('status', '!=', 2)
+                    ->orderBy('created_at', 'desc')->get();
+                    $outcomeMessages = [];
+                    foreach($messages as $message) {
+                        if ($message->created_by == $user->id){
+                            $outcomeMessages[] = $message;
+                        }
+                    }
+            } else if (!$request->keyword && $request->start_date && $request->end_date) {
+                $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
+                    ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
+                    ->where('status', '!=', 2)
+                    ->where('created_by', $user->id)
                     ->orderBy('created_at', 'desc')->get();
             } else {
-                $data = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat', 'bagian'])
-                    ->where('status', 2)
-                    ->where('bagian_id', $user->bagian->bagian_id)
+                $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
+                    ->where('status', '!=', 2)
+                    ->where('created_by', $user->id)
                     ->orderBy('created_at', 'desc')->get();
             }
         }
 
-
-
-        $mappingSuratKeluar = $data->map(function ($item) {
+        $mappingoutcomeMessages = collect($outcomeMessages)->map(function ($item) {
             $item->file_path =
-                'https://api.simantap.ngampooz.com/files/surat_keluar/' . $item->file;
+                'https://api.simantap.ngampooz.com/files/surat_masuk/' . $item->file;
             return $item;
         });
+
         return response()->json([
-            'status' => 'Success',
-            'data' => $data
+            'message' => 'fetched successfully',
+            'data' => $outcomeMessages
+        ], 200);
+    }
+
+    public function suratKeluarSuccess(Request $request)
+    {
+        if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
+            $messages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
+                ->where('status', 2)
+                ->orWhere(
+                    'no_agenda',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'no_surat',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+
+                ->orWhere(
+                    'perihal',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'klasifikasi',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orderBy('created_at', 'desc')->get();
+            $outcomeMessages =  [];
+            foreach ($messages as $message){
+                if ($message->status == 2) {
+                    $outcomeMessages[] = $message;
+                }
+            }
+        } else if (!$request->keyword && $request->start_date && $request->end_date) {
+            $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat', 'staffmin_file'])
+                ->where('status', 2)
+                ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
+                ->orderBy('created_at', 'desc')->get();
+        } else if ($request->keyword && $request->start_date && $request->end_date) {
+            $messages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat', 'staffmin_file'])
+                ->where('status', 2)
+                ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
+                ->where(
+                    'no_agenda',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'no_surat',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'perihal',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orWhere(
+                    'klasifikasi',
+                    'like',
+                    '%' . $request->keyword . '%'
+                )
+                ->orderBy('created_at', 'desc')->get();
+                $outcomeMessages =  [];
+                foreach ($messages as $message){
+                    if ($message->status == 2) {
+                        $outcomeMessages[] = $message;
+                    }
+                }
+        } else {
+            $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat', 'staffmin_file'])
+                ->where('status', 2)
+                ->orderBy('created_at', 'desc')->get();
+        }
+
+        $mappingoutcomeMessages = collect($outcomeMessages)->map(function ($item) {
+            $item->file_path =
+                'https://api.simantap.ngampooz.com/files/surat_masuk/' . $item->file;
+            if ($item->staffmin_file) {
+                $item->staffmin_file->file_url =
+                'https://api.simantap.ngampooz.com/files/staff_min/' . $item->staffmin_file->file;
+            }
+            return $item;
+        });
+
+        return response()->json([
+            'message' => 'fetched successfully',
+            'data' => $outcomeMessages
         ], 200);
     }
 

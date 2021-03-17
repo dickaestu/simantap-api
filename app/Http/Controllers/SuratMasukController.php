@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use PDF;
-use Illuminate\Support\Facades\DB;
 
 use App\Models\SuratMasuk;
 use Carbon\Carbon;
@@ -26,7 +25,6 @@ class SuratMasukController extends Controller
      */
     public function index(Request $request)
     {
-        DB::enableQueryLog();
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
         if ($seq === 2) {

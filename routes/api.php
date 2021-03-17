@@ -85,6 +85,7 @@ Route::group(['prefix' => '/surat-masuk', 'middleware' => 'jwt.auth'], function 
 */
 Route::group(['prefix' => '/surat-keluar', 'middleware' => 'jwt.auth'], function () {
     Route::get('/disposisi', 'DisposisiSuratKeluarController@index');
+    Route::get('/history/{surat}', 'DisposisiSuratKeluarController@history');
     Route::post('{surat}/disposisi', 'DisposisiSuratKeluarController@store');
     Route::get('/disposisi/{disposisi}', 'DisposisiSuratKeluarController@show');
     Route::put('/disposisi/{disposisi}', 'DisposisiSuratKeluarController@update');

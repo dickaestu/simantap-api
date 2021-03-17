@@ -10,9 +10,9 @@ return array(
     | Set some default values. It is possible to add all defines that can be set
     | in dompdf_config.inc.php. You can also override the entire config file.
     |
-    */
+                                            */
     'show_warnings' => false,   // Throw an Exception on warnings from dompdf
-    'orientation' => 'portrait',
+    'orientation' => 'landscape',
     'defines' => array(
         /**
          * The location of the DOMPDF font directory

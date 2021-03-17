@@ -30,7 +30,7 @@ class SuratMasuk extends Model
         return $this->belongsTo('App\Models\StatusSurat', 'status');
     }
 
-    public function created_by()
+    public function user_created_by()
     {
         return $this->belongsTo('App\Models\User', 'created_by');
     }

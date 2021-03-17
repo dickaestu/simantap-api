@@ -255,7 +255,7 @@ class ReportController extends Controller
 
         $mappingoutcomeMessages = collect($outcomeMessages)->map(function ($item) {
             $item->file_path =
-                'https://api.simantap.ngampooz.com/files/surat_masuk/' . $item->file;
+                'https://api.simantap.ngampooz.com/files/surat_keluar/' . $item->file;
             return $item;
         });
 

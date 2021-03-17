@@ -124,7 +124,7 @@ class SuratKeluarController extends Controller
 
         $mappingoutcomeMessages = collect($outcomeMessages)->map(function ($item) {
             $item->file_path =
-                'https://api.simantap.ngampooz.com/files/surat_masuk/' . $item->file;
+                'https://api.simantap.ngampooz.com/files/surat_keluar/' . $item->file;
             return $item;
         });
 
@@ -192,7 +192,7 @@ class SuratKeluarController extends Controller
 
         $mappingoutcomeMessages = collect($outcomeMessages)->map(function ($item) {
             $item->file_path =
-                'https://api.simantap.ngampooz.com/files/surat_masuk/' . $item->file;
+                'https://api.simantap.ngampooz.com/files/surat_keluar/' . $item->file;
             if ($item->staffmin_file) {
                 $item->staffmin_file->file_url =
                     'https://api.simantap.ngampooz.com/files/staff_min/' . $item->staffmin_file->file;

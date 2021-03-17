@@ -24,7 +24,6 @@ class SuratKeluarController extends Controller
         if ($seq === 2) {
             if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
                 $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
-
                     ->where(
                         'no_surat',
                         'like',
@@ -221,6 +220,8 @@ class SuratKeluarController extends Controller
             'no_surat' => 'required|string|max:50|unique:surat_keluar',
             'tanggal_surat' => 'required|date',
             'perihal' => 'required|string|max:255',
+            'pengolah' => 'required|string|max:255',
+            'tujuan_surat' => 'required|string|max:255',
             'file.*' => 'nullable|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
 
         ]);
@@ -245,6 +246,8 @@ class SuratKeluarController extends Controller
                 'no_surat' => $request->no_surat,
                 'tanggal_surat' => $request->tanggal_surat,
                 'perihal' => $request->perihal,
+                'pengolah' => $request->pengolah,
+                'tujuan_surat' => $request->tujuan_surat,
                 'file' => $fileName ?? null,
                 'created_by' => $user->id,
                 'status' => 1
@@ -314,6 +317,8 @@ class SuratKeluarController extends Controller
             'no_surat' => 'required|string|max:50|unique:surat_keluar,no_surat,' . $message->id,
             'tanggal_surat' => 'required|date',
             'perihal' => 'required|string|max:255',
+            'pengolah' => 'required|string|max:255',
+            'tujuan_surat' => 'required|string|max:255',
             'file.*' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
 
         ]);
@@ -338,6 +343,8 @@ class SuratKeluarController extends Controller
                 'tanggal_surat' => $request->tanggal_surat,
                 'file' => $fileName ?? $message->file,
                 'perihal' => $request->perihal,
+                'pengolah' => $request->pengolah,
+                'tujuan_surat' => $request->tujuan_surat,
                 'updated_by' => $user->id,
             ]);
 

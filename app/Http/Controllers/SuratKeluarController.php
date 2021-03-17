@@ -113,7 +113,7 @@ class SuratKeluarController extends Controller
                     ->where('status', '!=', 2)
                     ->where('created_by', $user->id)
                     ->orderBy('created_at', 'desc')->get();
-            } else if ($request->keyword && $request->start_date && $request->end_date) {               
+            } else if ($request->keyword && $request->start_date && $request->end_date) {
                 $messages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->where('created_by', $user->id)
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
@@ -143,12 +143,12 @@ class SuratKeluarController extends Controller
                     )
                     ->where('status', '!=', 2)
                     ->orderBy('created_at', 'desc')->get();
-                    $outcomeMessages = [];
-                    foreach($messages as $message) {
-                        if ($message->created_by == $user->id){
-                            $outcomeMessages[] = $message;
-                        }
+                $outcomeMessages = [];
+                foreach ($messages as $message) {
+                    if ($message->created_by == $user->id) {
+                        $outcomeMessages[] = $message;
                     }
+                }
             } else if (!$request->keyword && $request->start_date && $request->end_date) {
                 $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
@@ -203,7 +203,7 @@ class SuratKeluarController extends Controller
                 )
                 ->orderBy('created_at', 'desc')->get();
             $outcomeMessages =  [];
-            foreach ($messages as $message){
+            foreach ($messages as $message) {
                 if ($message->status == 2) {
                     $outcomeMessages[] = $message;
                 }
@@ -238,12 +238,12 @@ class SuratKeluarController extends Controller
                     '%' . $request->keyword . '%'
                 )
                 ->orderBy('created_at', 'desc')->get();
-                $outcomeMessages =  [];
-                foreach ($messages as $message){
-                    if ($message->status == 2) {
-                        $outcomeMessages[] = $message;
-                    }
+            $outcomeMessages =  [];
+            foreach ($messages as $message) {
+                if ($message->status == 2) {
+                    $outcomeMessages[] = $message;
                 }
+            }
         } else {
             $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat', 'staffmin_file'])
                 ->where('status', 2)
@@ -255,7 +255,7 @@ class SuratKeluarController extends Controller
                 'https://api.simantap.ngampooz.com/files/surat_masuk/' . $item->file;
             if ($item->staffmin_file) {
                 $item->staffmin_file->file_url =
-                'https://api.simantap.ngampooz.com/files/staff_min/' . $item->staffmin_file->file;
+                    'https://api.simantap.ngampooz.com/files/staff_min/' . $item->staffmin_file->file;
             }
             return $item;
         });
@@ -279,7 +279,6 @@ class SuratKeluarController extends Controller
         $validator = Validator::make($request->all(), [
             'no_agenda' => 'required|string|max:50|unique:surat_keluar',
             'tanggal_surat' => 'required|date',
-            'tanggal_terima' => 'required|date',
             'perihal' => 'required|string|max:255',
             'file.*' => 'nullable|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
             'klasifikasi' => 'required'
@@ -306,7 +305,6 @@ class SuratKeluarController extends Controller
                 'no_surat' => $surat,
                 'no_agenda' => $request->no_agenda,
                 'tanggal_surat' => $request->tanggal_surat,
-                'tanggal_terima' => $request->tanggal_terima,
                 'perihal' => $request->perihal,
                 'file' => $fileName ?? null,
                 'created_by' => $user->id,
@@ -377,7 +375,6 @@ class SuratKeluarController extends Controller
         $validator = Validator::make($request->all(), [
             'no_agenda' => 'required|string|max:50|unique:surat_keluar,no_agenda,' . $message->id,
             'tanggal_surat' => 'required|date',
-            'tanggal_terima' => 'required|date',
             'perihal' => 'required|string|max:255',
             'file.*' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
 
@@ -401,7 +398,6 @@ class SuratKeluarController extends Controller
             $message->update([
                 'no_agenda' => $request->no_agenda,
                 'tanggal_surat' => $request->tanggal_surat,
-                'tanggal_terima' => $request->tanggal_terima,
                 'file' => $fileName ?? $message->file,
                 'perihal' => $request->perihal,
                 'updated_by' => $user->id,

@@ -12,7 +12,6 @@ class SuratKeluar extends Model
         'no_agenda',
         'no_surat',
         'tanggal_surat',
-        'tanggal_terima',
         'perihal',
         'file',
         'status',

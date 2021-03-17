@@ -28,63 +28,63 @@ class DisposisiSuratKeluarController extends Controller
         if ($request->keyword) {
             if ($seq == 2) {
                 $dispositions = Disposition::with(['disposable.status_surat'])
-                ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
-                    return $item->where('status', '!=', 2)->where(
-                        'no_surat',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )->orWhere(
-                        'no_agenda',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )->orWhere(
-                        'perihal',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )->orWhere(
-                        'klasifikasi',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    );
-                })
-                    ->get();
-            } else {
-                $dispositions = Disposition::with(['disposable.status_surat'])
-                ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
-                    $item->where('status', '!=', 2)->where(
-                        'no_surat',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )->orWhere(
-                        'no_agenda',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                        ->orWhere(
+                    ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
+                        return $item->where('status', '!=', 2)->where(
+                            'no_surat',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )->orWhere(
+                            'no_agenda',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )->orWhere(
                             'perihal',
                             'like',
                             '%' . $request->keyword . '%'
-                        )
-                        ->orWhere(
+                        )->orWhere(
                             'klasifikasi',
                             'like',
                             '%' . $request->keyword . '%'
                         );
-                })
+                    })
+                    ->get();
+            } else {
+                $dispositions = Disposition::with(['disposable.status_surat'])
+                    ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) use ($request) {
+                        $item->where('status', '!=', 2)->where(
+                            'no_surat',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )->orWhere(
+                            'no_agenda',
+                            'like',
+                            '%' . $request->keyword . '%'
+                        )
+                            ->orWhere(
+                                'perihal',
+                                'like',
+                                '%' . $request->keyword . '%'
+                            )
+                            ->orWhere(
+                                'klasifikasi',
+                                'like',
+                                '%' . $request->keyword . '%'
+                            );
+                    })
                     ->where('kepada', $user->sub_bagian_id)->get();
             }
         } else {
             if ($seq == 2) {
                 $dispositions = Disposition::with(['disposable.status_surat'])
-                ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) {
-                    $item->where('status', '!=', 2);
-                })
+                    ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) {
+                        $item->where('status', '!=', 2);
+                    })
                     ->get();
             } else {
                 $dispositions = Disposition::with(['disposable.status_surat'])
-                ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) {
-                    $item->where('status', '!=', 2);
-                })
+                    ->whereHasMorph('disposable', [SuratMasuk::class], function ($item) {
+                        $item->where('status', '!=', 2);
+                    })
                     ->where('kepada', $user->sub_bagian_id)->get();
             }
         }
@@ -320,7 +320,7 @@ class DisposisiSuratKeluarController extends Controller
         $subSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', 3)->get();
 
 
-        $pdf = PDF::loadView('templates.disposition', [
+        $pdf = PDF::loadView('templates.disposition-keluar', [
             'disposition' => $disposition,
             'subSections' => $subSections,
         ]);

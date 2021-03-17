@@ -12,9 +12,7 @@ class SuratMasuk extends Model
         'no_surat',
         'tanggal_surat',
         'tanggal_terima',
-        'sumber_surat',
         'perihal',
-        'keterangan',
         'file',
         'status',
         'created_by',
@@ -32,7 +30,7 @@ class SuratMasuk extends Model
         return $this->belongsTo('App\Models\StatusSurat', 'status');
     }
 
-    public function created_by()
+    public function user_created_by()
     {
         return $this->belongsTo('App\Models\User', 'created_by');
     }
@@ -52,7 +50,8 @@ class SuratMasuk extends Model
         return $this->hasOne('App\Models\StaffminFile');
     }
 
-    public function notifications(){
+    public function notifications()
+    {
         return $this->morphMany('App\Models\Notification', 'notifable');
     }
 }

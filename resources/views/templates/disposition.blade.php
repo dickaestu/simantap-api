@@ -21,110 +21,108 @@
             width: 15%;
             font-size: 14px
         }
+        .content .table-top td {
+            border:none;
+            font-size: 14px
+        }
+        
+        .disposisi{
+            margin-top: 20px
+        }
+        .disposisi .table-disposisi{
+            width: 100%
+        }
+
+        .disposisi .table-disposisi th {
+            text-align: center;
+            border: none
+        }
     </style>
 </head>
 <body>
 
     <div style="display: inline-block">
         <div class="header-left" style="border-bottom: 1px solid #000;">
-            <h5 style="margin-bottom: 5px">KEPOLISIAN DAERAH METRO JAYA <br> BIRO SUMBER DAYA MANUSIA</h5>
+            <p style="margin-bottom: 5px, font-size:20px">POLRI DAERAH METRO JAYA <br> DIREKTORAT LALU LINTAS <br>
+                Jalan Jenderal Sudirman 55, Jakarta 12190
+            </p>
             
         </div>
     </div>
-    <div class="header-right" style="float: right">
-        <p style="">Klasifikasi : {{ ucwords($disposition->disposable->klasifikasi) }}</p>
-    </div>
+   
 
-    <div style="margin-top: 40px">
+    <div style="margin-top: 20px">
          <h4 class="text-center">LEMBAR DISPOSISI</h4>
     </div>
 
-    <div>
-        <table style="width: 100%;  border-collapse: collapse;">
+    <div class="content">
+        <table class="table-top">
             <tr>
-                <td style="border: none; font-size: 13px">No.Agenda: {{ $disposition->disposable->no_agenda }}</td>
-                <td style="border: none; font-size: 13px">Diterima Tgl: {{ \Carbon\Carbon::create($disposition->disposable->tanggal_terima)->format('d-m-Y') }}</td>
+                <td>Kepada</td>
+                <td></td> 
+                <td>:</td>
+                <td>KASI STNK</td>
             </tr>
             <tr>
-                <th class="text-center">
-                    CATATAN
-                </th>
-                <th class="text-center">
+                <td>Nomor Agenda</td>
+                 <td></td> 
+                <td>:</td>
+                <td>{{ $disposition->disposable->no_agenda }} 
+                    <span style="margin-left: 20px"> Diterima Tanggal : {{ \Carbon\Carbon::create($disposition->disposable->tanggal_terima)->format("d-m-Y") }}</span> 
+                </td>
+          
+            </tr>
+            <tr>
+                <td>Surat Dari</td>
+                 <td></td> 
+                <td>:</td>
+                <td>{{ $disposition->disposable->user_created_by->name }}</td>
+            </tr>
+            <tr>
+                <td>Nomor Surat/tanggal</td>
+                 <td></td> 
+                <td>:</td>
+                <td>{{ $disposition->disposable->no_surat }} / {{ \Carbon\Carbon::create($disposition->disposable->tanggal_surat)->format("d-m-Y") }}</td>
+            </tr>
+            <tr>
+                <td>Perihal</td>
+                 <td></td> 
+                <td>:</td>
+                <td>{{ $disposition->disposable->perihal }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="disposisi">
+        <table class="table-disposisi">
+            <tr>
+                <th colspan="2" style="border-bottom:1px solid #000 !important;border-top:1px solid #000 !important;">
                     ISI DISPOSISI
                 </th>
             </tr>
-            <tr>
-                <td style="font-size: 13px;font-weight:bold">
-                    Yth. Karo SDM
-                </td>
-                <td>
-                
-                </td>
+            <tr >
+                <th style="border-right:1px solid #000 !important; border-bottom:1px solid #000 !important; ">
+                    KASI STNK</th>
+                <th style="border-bottom:1px solid #000 !important;"></th>
             </tr>
             <tr>
-                <td style="padding: 5px">
-                    <table style="width:100%">
-                        <tr>
-                            <td style="padding-left:0; border:none;  vertical-align:top">Surat Dari</td>
-                            <td style="padding-left:0; border:none;  vertical-align:top">:</td>
-                            <td style="padding-left:0; border:none;  vertical-align:top">{{ $disposition->disposable->sumber_surat }}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding-left:0; border:none;  vertical-align:top">Nomor</td>
-                            <td style="padding-left:0; border:none;  vertical-align:top">:</td>
-                            <td style="padding-left:0; border:none;  vertical-align:top">{{ $disposition->disposable->no_surat }}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding-left:0; border:none;  vertical-align:top">Tanggal</td>
-                            <td style="padding-left:0; border:none;  vertical-align:top">:</td>
-                            <td style="padding-left:0; border:none;  vertical-align:top"> {{ \Carbon\Carbon::create($disposition->disposable->tanggal_surat)->format('d-m-Y') }}</td>
-                        </tr>
-                        <tr class="">
-                            <td style="padding-left:0; border:none; vertical-align:top">Perihal</td>
-                            <td style="padding-left:0; border:none; vertical-align:top">:</td>
-                            <td style="padding-left:0; border:none ; vertical-align:top"> {{ $disposition->disposable->perihal }}</td>
-                        </tr>
-                    </table>
-                </td>
-                <td style="vertical-align: middle; text-align:center" rowspan="4">
-                  <p>{{ $disposition->isi_disposisi }}</p>
-                </td>
-            </tr>
-            <tr>
-                <td style="font-size: 13px;font-weight:bold" class="text-center">
-                    DITERUSKAN
-                </td>
-            </tr>
-            <tr>
-                <td  class="">
-                    Kepada Yth:
-                </td>
-            </tr>
-            <tr>
-                <td>
+                <td style="border: none; border-right:1px solid #000 !important">
                     <table style="width: 100%">
-                        @foreach ($subSections as $sub)
+                        @foreach ($subSections as $section)
                         <tr>
-                            <td style="padding-top:0; border:none;  width:10%"> <input {{ $disposition->kepada == $sub->id ? 'checked' :'' }} type="checkbox" /></td>
-                            <td style="padding-top:0; border:none; padding-left:0">{{ $sub->nama }}</td>
+                            <td style="padding-top:0; border:none;  width:10%"> <input {{ $disposition->kepada == $section->id ? 'checked' :'' }} type="checkbox" /></td>
+                            <td style="padding-top:0; border:none; padding-left:0">{{ $section->nama }}</td>
                         </tr>
                         @endforeach
                     </table>
-                        
-                   
+                </td>
+                <td style="border: none">
+                    {{ $disposition->isi_disposisi }}
                 </td>
             </tr>
-           <tr>
-         
-            <td style="vertical-align: top" colspan="2">
-                    <p>Catatan:</p> 
-                    <p>{{ $disposition->catatan }}</p>
-            </td>
-         
-           </tr>
-      
         </table>
-
     </div>
+
+   
 </body>
 </html>

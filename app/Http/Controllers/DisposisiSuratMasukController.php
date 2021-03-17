@@ -170,18 +170,11 @@ class DisposisiSuratMasukController extends Controller
 
         $incomingMessage = SuratMasuk::FindOrFail($suratId);
 
-        if ($seq != 3) {
-            $validator = Validator::make($request->all(), [
-                'kepada'  => 'required|numeric',
-                'catatan' => 'nullable',
-                'isi_disposisi' => 'nullable',
-            ]);
-        } else {
-            $validator = Validator::make($request->all(), [
 
-                'isi_disposisi' => 'nullable',
-            ]);
-        }
+        $validator = Validator::make($request->all(), [
+            'kepada'  => 'required|numeric',
+            'isi_disposisi' => 'nullable',
+        ]);
 
         if ($validator->fails()) {
             $response = [
@@ -192,120 +185,44 @@ class DisposisiSuratMasukController extends Controller
         } else {
             $response = null;
             $status = null;
+            $incomingMessage->update(['status' => 2]);
 
+            $disposition = $incomingMessage->dispositions()->create([
+                'kepada'  => $request->kepada,
+                'isi_disposisi' => $request->isi_disposisi,
+                'created_by' => $user->id
+            ]);
 
-            if ($seq == 3) {
-                // store untuk diposisi kasubag ke paur
-                $paur = SubBagian::with('jenis_bagian')->select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)
-                    ->where('bagian_id', $user->bagian->bagian_id)
-                    ->where(
-                        'atasan',
-                        $user->sub_bagian_id
-                    )
-                    ->first();
-                $disposition = $incomingMessage->dispositions()->create([
-                    'kepada'  => $paur->id,
-                    'isi_disposisi' => $request->isi_disposisi,
-                    'catatan' => $request->catatan ?? null,
-                    'created_by' => $user->id
-                ]);
-                $incomingMessage->update(['status' => 4]);
+            //Get token firebase from user
+            // $body = $this->createStatus($disposition, $incomingMessage, $request->kepada, $seq, $user);
+            // $subBagian = SubBagian::FindOrFail($request->kepada);
+            // $firebaseData = [
+            //     'token' => $subBagian->users()->where('roles_id', 2)->first()->device_token ?? null,
+            //     'user_id' => $subBagian->users()->where('roles_id', 2)->first()->id,
+            //     'body' => $body,
+            //     'data' => [
+            //         'id' => $disposition->id,
+            //         'type' => 'disposition'
+            //     ],
+            //     'title' => '1 pekerjaan telah masuk.'
+            // ];
+            // if ($tembusan = $request->tembusan) {
+            //     $disposition->sections()->sync($tembusan);
+            // }
 
-                //Get token firebase from user
-                $body = $this->createStatus($disposition, $incomingMessage, $paur->id, $seq, $user);
-                $firebaseData = [
-                    'token' => $paur->users()->where('roles_id', 2)->first()->device_token ?? null,
-                    'user_id' => $paur->users()->where('roles_id', 2)->first()->id,
-                    'body' => $body,
-                    'data' => [
-                        'id' => $disposition->id,
-                        'type' => 'disposition'
-                    ],
-                    'title' => '1 pekerjaan telah masuk.'
-                ];
+            //Send Notification to Firebase
+            // if ($firebaseData['token']) {
+            //     $notification = new Notification;
+            //     $notification->toSingleDevice($firebaseData, null, null);
+            //     if ($firebaseData['token']) {
+            //         NotificationController::store($disposition, $firebaseData['user_id']);
+            //     }
+            // }
 
-            } else if ($seq == 4) {
-                // store untuk diposisi paur ke staff min
-                $staffmin = SubBagian::where('seq', $seq + 1)->where('bagian_id', $user->bagian->bagian_id)
-                    ->where(
-                        'atasan',
-                        $user->sub_bagian_id
-                    )->first();
-
-                $disposition = $incomingMessage->dispositions()->create([
-                    'kepada'  => $staffmin->id,
-                    'catatan' => $request->catatan,
-                    'isi_disposisi' => $request->isi_disposisi,
-                    'user_id' => $request->kepada,
-                    'created_by' => $user->id
-                ]);
-
-                $incomingMessage->update(['status' => 5]);
-
-                //Get token firebase from user
-                $body = $this->createStatus($disposition, $incomingMessage, $staffmin->id, $seq, $user);
-                $userReceivedNotif = User::FindOrFail($request->kepada);
-                $firebaseData = [
-                    'token' => $userReceivedNotif->device_token ?? null,
-                    'user_id' => $userReceivedNotif->id,
-                    'body' => $body,
-                    'data' => [
-                        'id' => $disposition->id,
-                        'type' => 'disposition'
-                    ],
-                    'title' => '1 pekerjaan telah masuk.'
-                ];
-
-            } else {
-                if ($seq == 1) {
-                    $incomingMessage->update(['status' => 2]);
-                } elseif ($seq == 2) {
-                    $incomingMessage->update(['status' => 3]);
-                }
-                $disposition = $incomingMessage->dispositions()->create([
-                    'kepada'  => $request->kepada,
-                    'catatan' => $request->catatan,
-                    'isi_disposisi' => $request->isi_disposisi,
-                    'created_by' => $user->id
-                ]);
-
-                //Get token firebase from user
-                $body = $this->createStatus($disposition, $incomingMessage, $request->kepada, $seq, $user);
-                $subBagian = SubBagian::FindOrFail($request->kepada);
-                $firebaseData = [
-                    'token' => $subBagian->users()->where('roles_id', 2)->first()->device_token ?? null,
-                    'user_id' => $subBagian->users()->where('roles_id', 2)->first()->id,
-                    'body' => $body,
-                    'data' => [
-                        'id' => $disposition->id,
-                        'type' => 'disposition'
-                    ],
-                    'title' => '1 pekerjaan telah masuk.'
-                ];
-                // if ($tembusan = $request->tembusan) {
-                //     $disposition->sections()->sync($tembusan);
-                // }
-
-                $response = [
-                    'message' => 'Stored Successfully',
-                ];
-                $status = 201;
-            }
-        }
-
-        if (!$response && !$status) {
-            $response = ['message' => 'stored successfully'];
+            $response = [
+                'message' => 'Stored Successfully',
+            ];
             $status = 201;
-        }
-
-        //Send Notification to Firebase
-        if($firebaseData['token']){
-            $notification = new Notification;
-            $responseFirebase = $notification->toSingleDevice($firebaseData);
-            if($firebaseData['token']){
-                NotificationController::store($disposition, $firebaseData['user_id']);
-            }
-            $response['fcm_result'] = $responseFirebase;
         }
 
         return response()->json($response, $status);
@@ -321,7 +238,7 @@ class DisposisiSuratMasukController extends Controller
                     'status' => 'Surat di disposisi oleh Karo ke ' . $subBagian->nama,
                     'surat_masuk_id' => $incomingMessage->id
                 ]);
-                $body = 'Disposisi surat dari Karo, Nomor Surat: ' . $incomingMessage->no_surat;
+                $body = 'Disposisi surat, Nomor Surat: ' . $incomingMessage->no_agenda;
                 break;
 
             default:
@@ -329,7 +246,7 @@ class DisposisiSuratMasukController extends Controller
                     'status' => $bagian->nama  . ' mendisposisikan ke bagian ' . $subBagian->nama,
                     'surat_masuk_id' => $incomingMessage->id
                 ]);
-                $body = 'Disposisi surat dari' . ucwords($bagian->nama) . 'Nomor Surat: ' . $incomingMessage->no_surat;
+                $body = 'Disposisi surat dari' . ucwords($bagian->nama) . 'Nomor Surat: ' . $incomingMessage->no_agenda;
                 break;
         }
 
@@ -382,7 +299,6 @@ class DisposisiSuratMasukController extends Controller
         $seq = $user->bagian->seq;
         $validator = Validator::make($request->all(), [
             'kepada'  => 'required|numeric',
-            'catatan' => 'nullable',
             'isi_disposisi' => 'nullable',
         ]);
 
@@ -400,7 +316,6 @@ class DisposisiSuratMasukController extends Controller
             }
             $disposition->update([
                 'kepada'  => $request->kepada,
-                'catatan' => $request->catatan,
                 'isi_disposisi' => $request->isi_disposisi,
                 'updated_by' => $user->id
             ]);
@@ -426,7 +341,7 @@ class DisposisiSuratMasukController extends Controller
         switch ($seq) {
             case 1:
                 $disposition->history()->update([
-                    'status' => 'Surat di disposisi oleh Karo ke ' . $subBagian->nama,
+                    'status' => 'Surat di disposisi ke ' . $subBagian->nama,
                 ]);
                 break;
 
@@ -468,83 +383,15 @@ class DisposisiSuratMasukController extends Controller
 
     public function cetakDisposisi($id, $response)
     {
-
         $disposition = Disposition::FindOrFail($id);
-        $seq = $disposition->user_created_by->bagian->seq;
-        $bagian_id = $disposition->user_created_by->bagian->bagian_id;
+        $subSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', 3)->get();
 
-        if ($seq == 1) {
-            $subSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)->get();
-        } else {
-            $subSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $seq + 1)
-                ->where('bagian_id', $bagian_id)->get();
-        }
 
-        if ($seq == 4) {
-            $subbag_disposition = Disposition::where('disposable_id', $disposition->disposable_id)
-                ->where('catatan', null)->first();
-        }
+        $pdf = PDF::loadView('templates.disposition', [
+            'disposition' => $disposition,
+            'subSections' => $subSections,
+        ]);
 
-        if ($seq == 1) {
-            $pdf = PDF::loadView('templates.disposition', [
-                'disposition' => $disposition,
-                'subSections' => $subSections
-            ]);
-        } elseif ($seq == 2) {
-            $kabag = Disposition::where('disposable_id', $disposition->disposable_id)
-                ->whereHas('subSector', function ($item) use ($seq) {
-                    return $item->where('seq', $seq);
-                })->first();
-            $kabagSubSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $kabag->user_created_by->bagian->seq + 1)->get();
-            $pdf = PDF::loadView('templates.disposition-kasubag', [
-                'disposition' => $disposition,
-                'subSections' => $subSections,
-                'kabagSubSections' => $kabagSubSections,
-                'kabag' => $kabag
-            ]);
-        } elseif ($seq == 3) {
-            $kabag = Disposition::where('disposable_id', $disposition->disposable_id)
-                ->whereHas('subSector', function ($item) use ($seq) {
-                    return $item->where('seq', $seq - 1);
-                })->first();
-            $kasubag = Disposition::where('disposable_id', $disposition->disposable_id)
-                ->whereHas('subSector', function ($item) use ($seq) {
-                    return $item->where('seq', $seq);
-                })->first();
-            $kabagSubSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $kabag->user_created_by->bagian->seq + 1)->get();
-            $kasubagSubSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $kasubag->user_created_by->bagian->seq + 1)
-                ->where('bagian_id', $kasubag->subSector->bagian_id)->get();
-            $pdf = PDF::loadView('templates.disposition-kaur', [
-                'disposition' => $disposition,
-                'subSections' => $subSections,
-                'kabagSubSections' => $kabagSubSections,
-                'kabag' => $kabag,
-                'kasubagSubSections' => $kasubagSubSections,
-                'kasubag' => $kasubag
-            ]);
-        } elseif ($seq == 4) {
-            $kabag = Disposition::where('disposable_id', $disposition->disposable_id)
-                ->whereHas('subSector', function ($item) use ($seq) {
-                    return $item->where('seq', $seq - 2);
-                })->first();
-            $kasubag = Disposition::where('disposable_id', $disposition->disposable_id)
-                ->whereHas('subSector', function ($item) use ($seq) {
-                    return $item->where('seq', $seq - 1);
-                })->first();
-            $kabagSubSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $kabag->user_created_by->bagian->seq + 1)->get();
-            $kasubagSubSections = SubBagian::select('id', 'nama', 'seq', 'bagian_id')->where('seq', $kasubag->user_created_by->bagian->seq + 1)
-                ->where('bagian_id', $kasubag->subSector->bagian_id)->get();
-            $pdf = PDF::loadView('templates.disposition-staffmin', [
-                'disposition' => $disposition,
-                'subSections' => $subSections,
-                'subbag_disposition' => $subbag_disposition,
-                'kabagSubSections' => $kabagSubSections,
-                'kabag' => $kabag,
-                'kasubagSubSections' => $kasubagSubSections,
-                'kasubag' => $kasubag
-                // 'subbag' => explode(" ", $kasubag->user_created_by->bagian->nama)[1]
-            ]);
-        }
 
         if ($response == 'view') {
             return $pdf->stream();

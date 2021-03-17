@@ -27,23 +27,18 @@ class SuratMasukController extends Controller
     {
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
-        if ($seq === 1) {
+        if ($seq === 2) {
             if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
-                    ->where('status', '!=', 6)
+                    ->where('status', '!=', 2)
 
                     ->where(
-                        'no_surat',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
                         'no_agenda',
                         'like',
                         '%' . $request->keyword . '%'
                     )
                     ->orWhere(
-                        'sumber_surat',
+                        'no_surat',
                         'like',
                         '%' . $request->keyword . '%'
                     )
@@ -60,30 +55,26 @@ class SuratMasukController extends Controller
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->start_date && $request->end_date) {
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
-                    ->where('status', '!=', 6)
+                    ->where('status', '!=', 2)
 
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->keyword && $request->start_date && $request->end_date) {
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
-                    ->where('status', '!=', 6)
+                    ->where('status', '!=', 2)
 
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->where(
-                        'no_surat',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
                         'no_agenda',
                         'like',
                         '%' . $request->keyword . '%'
                     )
                     ->orWhere(
-                        'sumber_surat',
+                        'no_surat',
                         'like',
                         '%' . $request->keyword . '%'
                     )
+
                     ->orWhere(
                         'perihal',
                         'like',
@@ -97,7 +88,7 @@ class SuratMasukController extends Controller
                     ->orderBy('created_at', 'desc')->get();
             } else {
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
-                    ->where('status', '!=', 6)
+                    ->where('status', '!=', 2)
                     ->orderBy('created_at', 'desc')->get();
             }
         } else {
@@ -106,17 +97,12 @@ class SuratMasukController extends Controller
                     ->orWhere(
                         function ($query) use ($request) {
                             $query->where(
-                                'no_surat',
+                                'no_agenda',
                                 'like',
                                 '%' . $request->keyword . '%'
                             )
                                 ->orWhere(
-                                    'no_agenda',
-                                    'like',
-                                    '%' . $request->keyword . '%'
-                                )
-                                ->orWhere(
-                                    'sumber_surat',
+                                    'no_surat',
                                     'like',
                                     '%' . $request->keyword . '%'
                                 )
@@ -132,8 +118,7 @@ class SuratMasukController extends Controller
                                 );
                         }
                     )
-
-                    ->where('status', '!=', 6)
+                    ->where('status', '!=', 2)
                     ->whereHas('dispositions', function ($item) use ($user) {
                         $item->whereHas('subSector', function ($q) use ($user) {
                             $q->where('bagian_id', $user->bagian->bagian_id);
@@ -143,7 +128,7 @@ class SuratMasukController extends Controller
             } else if ($request->start_date && $request->end_date) {
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
-                    ->where('status', '!=', 6)
+                    ->where('status', '!=', 2)
                     ->whereHas('dispositions', function ($item) use ($user) {
                         $item->whereHas('subSector', function ($q) use ($user) {
                             $q->where('bagian_id', $user->bagian->bagian_id);
@@ -157,17 +142,12 @@ class SuratMasukController extends Controller
                     ->orWhere(
                         function ($query) use ($request) {
                             $query->where(
-                                'no_surat',
+                                'no_agenda',
                                 'like',
                                 '%' . $request->keyword . '%'
                             )
                                 ->orWhere(
-                                    'no_agenda',
-                                    'like',
-                                    '%' . $request->keyword . '%'
-                                )
-                                ->orWhere(
-                                    'sumber_surat',
+                                    'no_surat',
                                     'like',
                                     '%' . $request->keyword . '%'
                                 )
@@ -183,7 +163,7 @@ class SuratMasukController extends Controller
                                 );
                         }
                     )
-                    ->where('status', '!=', 6)
+                    ->where('status', '!=', 2)
                     ->whereHas('dispositions', function ($item) use ($user) {
                         $item->whereHas('subSector', function ($q) use ($user) {
                             $q->where('bagian_id', $user->bagian->bagian_id);
@@ -192,7 +172,7 @@ class SuratMasukController extends Controller
                     ->orderBy('created_at', 'desc')->get();
             } else {
                 $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
-                    ->where('status', '!=', 6)
+                    ->where('status', '!=', 2)
                     ->whereHas('dispositions', function ($item) use ($user) {
                         $item->whereHas('subSector', function ($q) use ($user) {
                             $q->where('bagian_id', $user->bagian->bagian_id);
@@ -218,22 +198,18 @@ class SuratMasukController extends Controller
     {
         if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
             $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat', 'staffmin_file'])
-                ->where('status', 6)
+                ->where('status', 2)
                 ->where(
-                    'no_surat',
-                    'like',
-                    '%' . $request->keyword . '%'
-                )
-                ->orWhere(
                     'no_agenda',
                     'like',
                     '%' . $request->keyword . '%'
                 )
                 ->orWhere(
-                    'sumber_surat',
+                    'no_surat',
                     'like',
                     '%' . $request->keyword . '%'
                 )
+
                 ->orWhere(
                     'perihal',
                     'like',
@@ -247,25 +223,20 @@ class SuratMasukController extends Controller
                 ->orderBy('created_at', 'desc')->get();
         } else if ($request->start_date && $request->end_date) {
             $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat', 'staffmin_file'])
-                ->where('status', 6)
+                ->where('status', 2)
                 ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                 ->orderBy('created_at', 'desc')->get();
         } else if ($request->keyword && $request->start_date && $request->end_date) {
             $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat', 'staffmin_file'])
-                ->where('status', 6)
+                ->where('status', 2)
                 ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                 ->where(
-                    'no_surat',
-                    'like',
-                    '%' . $request->keyword . '%'
-                )
-                ->orWhere(
                     'no_agenda',
                     'like',
                     '%' . $request->keyword . '%'
                 )
                 ->orWhere(
-                    'sumber_surat',
+                    'no_surat',
                     'like',
                     '%' . $request->keyword . '%'
                 )
@@ -313,13 +284,11 @@ class SuratMasukController extends Controller
     {
         $user = JWTAuth::user();
         $validator = Validator::make($request->all(), [
-            'no_surat' => 'required|string|max:50|unique:surat_masuk',
+            'no_agenda' => 'required|string|max:50|unique:surat_masuk',
             'tanggal_surat' => 'required|date',
             'tanggal_terima' => 'required|date',
-            'sumber_surat' => 'required|string|max:255',
             'perihal' => 'required|string|max:255',
             'file.*' => 'required|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
-            'keterangan' => 'nullable',
             'klasifikasi' => 'required'
         ]);
 
@@ -336,46 +305,44 @@ class SuratMasukController extends Controller
 
             $file->move('files/surat_masuk', $fileName);
 
-            $agenda = $this->generateAgenda($request->klasifikasi);
+            $surat = $this->generateSurat($request->klasifikasi);
 
             $message = SuratMasuk::create([
-                'no_agenda' => $agenda,
-                'no_surat' => $request->no_surat,
+                'no_surat' => $surat,
+                'no_agenda' => $request->no_agenda,
                 'tanggal_surat' => $request->tanggal_surat,
                 'tanggal_terima' => $request->tanggal_terima,
-                'sumber_surat' => $request->sumber_surat,
                 'perihal' => $request->perihal,
                 'file' => $fileName,
-                'keterangan' => $request->keterangan,
                 'created_by' => $user->id,
                 'klasifikasi' => $request->klasifikasi,
                 'status' => 1
             ]);
 
             $message->history()->create([
-                'status' => 'Surat Masuk dibuat Karo.',
+                'status' => 'Surat Masuk dibuat ' . $user->name,
                 'surat_masuk_id' => $message->id
             ]);
 
-            $userReceiveNotif = User::where('roles_id', 2)->where('sub_bagian_id', 1)->first();
-            //Set FirebaseData for Send Notification
-            $firebaseData = [
-                'token' => $userReceiveNotif->device_token ?? null,
-                'user_id' => $userReceiveNotif->id,
-                'body' => 'Terdapat surat masuk dengan nomor surat :' . $message->no_surat,
-                'data' => [
-                    'id' => $message->id,
-                    'type' => 'surat_masuk'
-                ],
-                'title' => 'Surat masuk telah diterima'
-            ];
+            // $userReceiveNotif = User::where('roles_id', 2)->where('sub_bagian_id', 1)->first();
+            // //Set FirebaseData for Send Notification
+            // $firebaseData = [
+            //     'token' => $userReceiveNotif->device_token ?? null,
+            //     'user_id' => $userReceiveNotif->id,
+            //     'body' => 'Terdapat surat masuk dengan nomor surat :' . $message->no_surat,
+            //     'data' => [
+            //         'id' => $message->id,
+            //         'type' => 'surat_masuk'
+            //     ],
+            //     'title' => 'Surat masuk telah diterima'
+            // ];
 
-            $notification = new Notification;
-            $responseFirebase = $notification->toSingleDevice($firebaseData);
-            $response['fcm_result'] = $responseFirebase;
-            if ($firebaseData['token']) {
-                NotificationController::store($message, $firebaseData['user_id']);
-            }
+            // $notification = new Notification;
+            // $notification->toSingleDevice($firebaseData, null, null);
+
+            // if ($firebaseData['token']) {
+            //     NotificationController::store($message, $firebaseData['user_id']);
+            // }
             $response = [
                 'message' => 'stored successfully'
             ];
@@ -391,18 +358,18 @@ class SuratMasukController extends Controller
      * @param  string  $klasifikasi
      * @return \Illuminate\Http\Response
      */
-    function generateAgenda($classification)
+    function generateSurat($classification)
     {
         $code = strtoupper($classification[0]);
         $message = SuratMasuk::where('klasifikasi', $classification)->latest()->first();
         if ($message) {
-            $explode = explode('-', $message->no_agenda);
-            $no_agenda = $code . "-" . sprintf('%05d', ($explode[1] + 1));
+            $explode = explode('-', $message->no_surat);
+            $no_surat = $code . "-" . sprintf('%05d', ($explode[1] + 1));
         } else {
-            $no_agenda = $code . "-" . sprintf('%05d', 1);
+            $no_surat = $code . "-" . sprintf('%05d', 1);
         }
 
-        return $no_agenda;
+        return $no_surat;
     }
 
     /**
@@ -433,13 +400,11 @@ class SuratMasukController extends Controller
         $user = JWTAuth::user();
         $message = SuratMasuk::FindOrFail($id);
         $validator = Validator::make($request->all(), [
-            'no_surat' => 'required|string|max:50|unique:surat_masuk,no_surat,' . $message->id,
+            'no_agenda' => 'required|string|max:50|unique:surat_masuk,no_agenda,' . $message->id,
             'tanggal_surat' => 'required|date',
             'tanggal_terima' => 'required|date',
-            'sumber_surat' => 'required|string|max:255',
             'perihal' => 'required|string|max:255',
-            'file' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
-            'keterangan' => 'nullable',
+            'file.*' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
 
         ]);
 
@@ -459,13 +424,11 @@ class SuratMasukController extends Controller
             }
 
             $message->update([
-                'no_surat' => $request->no_surat,
+                'no_agenda' => $request->no_agenda,
                 'tanggal_surat' => $request->tanggal_surat,
                 'tanggal_terima' => $request->tanggal_terima,
-                'sumber_surat' => $request->sumber_surat,
                 'file' => $fileName ?? $message->file,
                 'perihal' => $request->perihal,
-                'keterangan' => $request->keterangan,
                 'updated_by' => $user->id,
             ]);
 

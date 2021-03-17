@@ -202,7 +202,7 @@ class DisposisiSuratKeluarController extends Controller
             'surat_id' => $incomingMessage->id,
             'tipe_surat' => "keluar"
         ]);
-        $body = 'Disposisi surat, Nomor Agenda: ' . $incomingMessage->no_agenda;
+        $body = 'Disposisi surat, Nomor Surat: ' . $incomingMessage->no_surat;
 
 
         return $body;

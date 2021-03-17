@@ -64,10 +64,10 @@
                 <td>KASI STNK</td>
             </tr>
             <tr>
-                <td>Nomor Agenda</td>
+                <td>Nomor Surat</td>
                  <td></td> 
                 <td>:</td>
-                <td>{{ $disposition->disposable->no_agenda }} 
+                <td>{{ $disposition->disposable->no_surat }} 
                 </td>
           
             </tr>
@@ -78,10 +78,10 @@
                 <td>{{ $disposition->disposable->user_created_by->name }}</td>
             </tr>
             <tr>
-                <td>Nomor Surat/tanggal</td>
+                <td>Tanggal</td>
                  <td></td> 
                 <td>:</td>
-                <td>{{ $disposition->disposable->no_surat }} / {{ \Carbon\Carbon::create($disposition->disposable->tanggal_surat)->format("d-m-Y") }}</td>
+                <td>{{ \Carbon\Carbon::create($disposition->disposable->tanggal_surat)->format("d-m-Y") }}</td>
             </tr>
             <tr>
                 <td>Perihal</td>

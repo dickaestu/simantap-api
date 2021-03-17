@@ -9,7 +9,6 @@ class SuratKeluar extends Model
     protected $table = 'surat_keluar';
 
     protected $fillable = [
-        'no_agenda',
         'no_surat',
         'tanggal_surat',
         'perihal',
@@ -17,7 +16,6 @@ class SuratKeluar extends Model
         'status',
         'created_by',
         'updated_by',
-        'klasifikasi'
     ];
 
     public function dispositions()

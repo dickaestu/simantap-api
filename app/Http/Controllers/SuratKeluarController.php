@@ -24,23 +24,14 @@ class SuratKeluarController extends Controller
         if ($seq === 2) {
             if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
                 $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
+
                     ->where(
-                        'no_agenda',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
                         'no_surat',
                         'like',
                         '%' . $request->keyword . '%'
                     )
                     ->orWhere(
                         'perihal',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
-                        'klasifikasi',
                         'like',
                         '%' . $request->keyword . '%'
                     )
@@ -55,23 +46,12 @@ class SuratKeluarController extends Controller
                 $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->where(
-                        'no_agenda',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
                         'no_surat',
                         'like',
                         '%' . $request->keyword . '%'
                     )
-
                     ->orWhere(
                         'perihal',
-                        'like',
-                        '%' . $request->keyword . '%'
-                    )
-                    ->orWhere(
-                        'klasifikasi',
                         'like',
                         '%' . $request->keyword . '%'
                     )
@@ -89,22 +69,12 @@ class SuratKeluarController extends Controller
                     ->orWhere(
                         function ($query) use ($request) {
                             $query->where(
-                                'no_agenda',
+                                'no_surat',
                                 'like',
                                 '%' . $request->keyword . '%'
                             )
                                 ->orWhere(
-                                    'no_surat',
-                                    'like',
-                                    '%' . $request->keyword . '%'
-                                )
-                                ->orWhere(
                                     'perihal',
-                                    'like',
-                                    '%' . $request->keyword . '%'
-                                )
-                                ->orWhere(
-                                    'klasifikasi',
                                     'like',
                                     '%' . $request->keyword . '%'
                                 );
@@ -120,22 +90,12 @@ class SuratKeluarController extends Controller
                     ->orWhere(
                         function ($query) use ($request) {
                             $query->where(
-                                'no_agenda',
+                                'no_surat',
                                 'like',
                                 '%' . $request->keyword . '%'
                             )
                                 ->orWhere(
-                                    'no_surat',
-                                    'like',
-                                    '%' . $request->keyword . '%'
-                                )
-                                ->orWhere(
                                     'perihal',
-                                    'like',
-                                    '%' . $request->keyword . '%'
-                                )
-                                ->orWhere(
-                                    'klasifikasi',
                                     'like',
                                     '%' . $request->keyword . '%'
                                 );
@@ -180,11 +140,7 @@ class SuratKeluarController extends Controller
         if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
             $messages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
                 ->where('status', 2)
-                ->orWhere(
-                    'no_agenda',
-                    'like',
-                    '%' . $request->keyword . '%'
-                )
+
                 ->orWhere(
                     'no_surat',
                     'like',
@@ -193,11 +149,6 @@ class SuratKeluarController extends Controller
 
                 ->orWhere(
                     'perihal',
-                    'like',
-                    '%' . $request->keyword . '%'
-                )
-                ->orWhere(
-                    'klasifikasi',
                     'like',
                     '%' . $request->keyword . '%'
                 )
@@ -218,22 +169,12 @@ class SuratKeluarController extends Controller
                 ->where('status', 2)
                 ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                 ->where(
-                    'no_agenda',
-                    'like',
-                    '%' . $request->keyword . '%'
-                )
-                ->orWhere(
                     'no_surat',
                     'like',
                     '%' . $request->keyword . '%'
                 )
                 ->orWhere(
                     'perihal',
-                    'like',
-                    '%' . $request->keyword . '%'
-                )
-                ->orWhere(
-                    'klasifikasi',
                     'like',
                     '%' . $request->keyword . '%'
                 )
@@ -277,11 +218,11 @@ class SuratKeluarController extends Controller
     {
         $user = JWTAuth::user();
         $validator = Validator::make($request->all(), [
-            'no_agenda' => 'required|string|max:50|unique:surat_keluar',
+            'no_surat' => 'required|string|max:50|unique:surat_keluar',
             'tanggal_surat' => 'required|date',
             'perihal' => 'required|string|max:255',
             'file.*' => 'nullable|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
-            'klasifikasi' => 'required'
+
         ]);
 
         if ($validator->fails()) {
@@ -299,16 +240,13 @@ class SuratKeluarController extends Controller
                 $file->move('files/surat_keluar', $fileName);
             }
 
-            $surat = $this->generateSurat($request->klasifikasi);
 
             $message = SuratKeluar::create([
-                'no_surat' => $surat,
-                'no_agenda' => $request->no_agenda,
+                'no_surat' => $request->no_surat,
                 'tanggal_surat' => $request->tanggal_surat,
                 'perihal' => $request->perihal,
                 'file' => $fileName ?? null,
                 'created_by' => $user->id,
-                'klasifikasi' => $request->klasifikasi,
                 'status' => 1
             ]);
 
@@ -373,7 +311,7 @@ class SuratKeluarController extends Controller
         $user = JWTAuth::user();
         $message = SuratKeluar::FindOrFail($id);
         $validator = Validator::make($request->all(), [
-            'no_agenda' => 'required|string|max:50|unique:surat_keluar,no_agenda,' . $message->id,
+            'no_surat' => 'required|string|max:50|unique:surat_keluar,no_surat,' . $message->id,
             'tanggal_surat' => 'required|date',
             'perihal' => 'required|string|max:255',
             'file.*' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
@@ -396,7 +334,7 @@ class SuratKeluarController extends Controller
             }
 
             $message->update([
-                'no_agenda' => $request->no_agenda,
+                'no_surat' => $request->no_surat,
                 'tanggal_surat' => $request->tanggal_surat,
                 'file' => $fileName ?? $message->file,
                 'perihal' => $request->perihal,

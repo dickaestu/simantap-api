@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use PDF;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\SuratMasuk;
 use Carbon\Carbon;
@@ -25,13 +26,12 @@ class SuratMasukController extends Controller
      */
     public function index(Request $request)
     {
+        DB::enableQueryLog();
         $user = JWTAuth::user();
         $seq = $user->bagian->seq;
         if ($seq === 2) {
             if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
                 $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
-                    ->where('status', '!=', 2)
-
                     ->where(
                         'no_agenda',
                         'like',
@@ -52,17 +52,15 @@ class SuratMasukController extends Controller
                         'like',
                         '%' . $request->keyword . '%'
                     )
+                    ->where('status', '!=', 2)
                     ->orderBy('created_at', 'desc')->get();
-            } else if ($request->start_date && $request->end_date) {
+            } else if (!$request->keyword && $request->start_date && $request->end_date) {
                 $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->where('status', '!=', 2)
-
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->keyword && $request->start_date && $request->end_date) {
                 $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
-                    ->where('status', '!=', 2)
-
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->where(
                         'no_agenda',
@@ -85,12 +83,14 @@ class SuratMasukController extends Controller
                         'like',
                         '%' . $request->keyword . '%'
                     )
+                    ->where('status', '!=', 2)
                     ->orderBy('created_at', 'desc')->get();
             } else {
                 $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->where('status', '!=', 2)
                     ->orderBy('created_at', 'desc')->get();
             }
+            //Seq 3
         } else {
             if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
                 $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
@@ -121,12 +121,10 @@ class SuratMasukController extends Controller
                     ->where('status', '!=', 2)
                     ->where('created_by', $user->id)
                     ->orderBy('created_at', 'desc')->get();
-            } else if ($request->keyword && $request->start_date && $request->end_date) {
-
-                $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
-                    ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
+            } else if ($request->keyword && $request->start_date && $request->end_date) {               
+                $messages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->where('created_by', $user->id)
-
+                    ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->orWhere(
                         function ($query) use ($request) {
                             $query->where(
@@ -153,8 +151,13 @@ class SuratMasukController extends Controller
                     )
                     ->where('status', '!=', 2)
                     ->orderBy('created_at', 'desc')->get();
-            } else if ($request->start_date && $request->end_date) {
-
+                    $incomingMessages = [];
+                    foreach($messages as $message) {
+                        if ($message->created_by == $user->id){
+                            $incomingMessages[] = $message;
+                        }
+                    }
+            } else if (!$request->keyword && $request->start_date && $request->end_date) {
                 $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->where('status', '!=', 2)
@@ -168,7 +171,7 @@ class SuratMasukController extends Controller
             }
         }
 
-        $mappingIncomingMessages = $incomingMessages->map(function ($item) {
+        $mappingIncomingMessages = collect($incomingMessages)->map(function ($item) {
             $item->file_path =
                 'https://api.simantap.ngampooz.com/files/surat_masuk/' . $item->file;
             return $item;
@@ -183,9 +186,9 @@ class SuratMasukController extends Controller
     public function suratMasukSuccess(Request $request)
     {
         if ($request->keyword && $request->start_date == "" && $request->end_date == "") {
-            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat', 'staffmin_file'])
+            $messages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
                 ->where('status', 2)
-                ->where(
+                ->orWhere(
                     'no_agenda',
                     'like',
                     '%' . $request->keyword . '%'
@@ -207,13 +210,19 @@ class SuratMasukController extends Controller
                     '%' . $request->keyword . '%'
                 )
                 ->orderBy('created_at', 'desc')->get();
-        } else if ($request->start_date && $request->end_date) {
-            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat', 'staffmin_file'])
+            $incomingMessages =  [];
+            foreach ($messages as $message){
+                if ($message->status == 2) {
+                    $incomingMessages[] = $message;
+                }
+            }
+        } else if (!$request->keyword && $request->start_date && $request->end_date) {
+            $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat', 'staffmin_file'])
                 ->where('status', 2)
                 ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                 ->orderBy('created_at', 'desc')->get();
         } else if ($request->keyword && $request->start_date && $request->end_date) {
-            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat', 'staffmin_file'])
+            $messages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat', 'staffmin_file'])
                 ->where('status', 2)
                 ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                 ->where(
@@ -237,20 +246,25 @@ class SuratMasukController extends Controller
                     '%' . $request->keyword . '%'
                 )
                 ->orderBy('created_at', 'desc')->get();
+                $incomingMessages =  [];
+                foreach ($messages as $message){
+                    if ($message->status == 2) {
+                        $incomingMessages[] = $message;
+                    }
+                }
         } else {
-            $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat', 'staffmin_file'])
-                ->where('status', 6)
+            $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat', 'staffmin_file'])
+                ->where('status', 2)
                 ->orderBy('created_at', 'desc')->get();
         }
 
-
-
-        $mappingIncomingMessages = $incomingMessages->map(function ($item) {
+        $mappingIncomingMessages = collect($incomingMessages)->map(function ($item) {
             $item->file_path =
                 'https://api.simantap.ngampooz.com/files/surat_masuk/' . $item->file;
-            $item->staffmin_file->file_url =
+            if ($item->staffmin_file) {
+                $item->staffmin_file->file_url =
                 'https://api.simantap.ngampooz.com/files/staff_min/' . $item->staffmin_file->file;
-
+            }
             return $item;
         });
 

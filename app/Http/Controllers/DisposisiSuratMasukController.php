@@ -99,10 +99,6 @@ class DisposisiSuratMasukController extends Controller
             return $item;
         });
 
-
-
-
-
         // $mappingDispositions = $dispositions->map(function ($item) {
         //     $item->tembusan = $item->sections()->get();
 

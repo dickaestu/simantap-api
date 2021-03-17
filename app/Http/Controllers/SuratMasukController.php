@@ -54,13 +54,13 @@ class SuratMasukController extends Controller
                     )
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->start_date && $request->end_date) {
-                $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->where('status', '!=', 2)
 
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->keyword && $request->start_date && $request->end_date) {
-                $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->where('status', '!=', 2)
 
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
@@ -87,7 +87,7 @@ class SuratMasukController extends Controller
                     )
                     ->orderBy('created_at', 'desc')->get();
             } else {
-                $incomingMessages = SuratMasuk::with(['created_by', 'updated_by', 'status_surat'])
+                $incomingMessages = SuratMasuk::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->where('status', '!=', 2)
                     ->orderBy('created_at', 'desc')->get();
             }

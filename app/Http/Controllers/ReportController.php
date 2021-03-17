@@ -134,11 +134,11 @@ class ReportController extends Controller
                         'like',
                         '%' . $request->keyword . '%'
                     )
-                    ->where('status', 2)
+                    ->where('status', 1)
                     ->orderBy('created_at', 'desc')->get();
             } else if (!$request->keyword && $request->start_date && $request->end_date) {
                 $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
-                    ->where('status', 2)
+                    ->where('status', 1)
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->keyword && $request->start_date && $request->end_date) {
@@ -165,11 +165,11 @@ class ReportController extends Controller
                         'like',
                         '%' . $request->keyword . '%'
                     )
-                    ->where('status', 2)
+                    ->where('status', 1)
                     ->orderBy('created_at', 'desc')->get();
             } else {
                 $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
-                    ->where('status', 2)
+                    ->where('status', 1)
                     ->orderBy('created_at', 'desc')->get();
             }
             //Seq 3
@@ -200,7 +200,7 @@ class ReportController extends Controller
                                 );
                         }
                     )
-                    ->where('status', 2)
+                    ->where('status', 1)
                     ->where('created_by', $user->id)
                     ->orderBy('created_at', 'desc')->get();
             } else if ($request->keyword && $request->start_date && $request->end_date) {
@@ -231,7 +231,7 @@ class ReportController extends Controller
                                 );
                         }
                     )
-                    ->where('status', 2)
+                    ->where('status', 1)
                     ->orderBy('created_at', 'desc')->get();
                 $outcomeMessages = [];
                 foreach ($messages as $message) {
@@ -242,12 +242,12 @@ class ReportController extends Controller
             } else if (!$request->keyword && $request->start_date && $request->end_date) {
                 $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
                     ->whereBetween('tanggal_surat', [$request->start_date, $request->end_date])
-                    ->where('status', 2)
+                    ->where('status', 1)
                     ->where('created_by', $user->id)
                     ->orderBy('created_at', 'desc')->get();
             } else {
                 $outcomeMessages = SuratKeluar::with(['user_created_by', 'updated_by', 'status_surat'])
-                    ->where('status', 2)
+                    ->where('status', 1)
                     ->where('created_by', $user->id)
                     ->orderBy('created_at', 'desc')->get();
             }

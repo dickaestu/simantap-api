@@ -18,6 +18,7 @@ class SuratKeluar extends Model
         'status',
         'created_by',
         'updated_by',
+        'status_type'
     ];
 
     public function dispositions()

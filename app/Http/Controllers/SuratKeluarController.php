@@ -223,7 +223,7 @@ class SuratKeluarController extends Controller
             'pengolah' => 'required|string|max:255',
             'tujuan_surat' => 'required|string|max:255',
             'file.*' => 'nullable|file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
-
+            'status_type' => 'required|in:biasa,kilat'
         ]);
 
         if ($validator->fails()) {
@@ -250,7 +250,8 @@ class SuratKeluarController extends Controller
                 'tujuan_surat' => $request->tujuan_surat,
                 'file' => $fileName ?? null,
                 'created_by' => $user->id,
-                'status' => 1
+                'status' => 1,
+                'status_type' => $request->status_type
             ]);
 
             $message->history()->create([
@@ -320,6 +321,8 @@ class SuratKeluarController extends Controller
             'pengolah' => 'required|string|max:255',
             'tujuan_surat' => 'required|string|max:255',
             'file.*' => 'file|mimes:csv,xlsx,xls,pdf,doc,docx|max:5000',
+            'status_type' => 'required|in:biasa,kilat'
+
 
         ]);
 
@@ -346,6 +349,7 @@ class SuratKeluarController extends Controller
                 'pengolah' => $request->pengolah,
                 'tujuan_surat' => $request->tujuan_surat,
                 'updated_by' => $user->id,
+                'status_type' => $request->status_type
             ]);
 
             $response = [

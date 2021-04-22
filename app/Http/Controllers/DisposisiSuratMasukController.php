@@ -149,32 +149,33 @@ class DisposisiSuratMasukController extends Controller
 
             //Get token firebase from user
             $body = $this->createStatus($disposition, $incomingMessage, $request->kepada, $seq, $user);
-            // $subBagian = SubBagian::FindOrFail($request->kepada);
-            // $firebaseData = [
-            //     'token' => $subBagian->users()->where('roles_id', 2)->first()->device_token ?? null,
-            //     'user_id' => $subBagian->users()->where('roles_id', 2)->first()->id,
-            //     'body' => $body,
-            //     'data' => [
-            //         'id' => $disposition->id,
-            //         'type' => 'disposition'
-            //     ],
-            //     'title' => '1 pekerjaan telah masuk.'
-            // ];
-            // if ($tembusan = $request->tembusan) {
-            //     $disposition->sections()->sync($tembusan);
-            // }
+            $subBagian = SubBagian::FindOrFail($request->kepada);
+            $firebaseData = [
+                'token' => $subBagian->users()->where('roles_id', 4)->first()->device_token ?? null,
+                'user_id' => $subBagian->users()->where('roles_id', 4)->first()->id,
+                'body' => $body,
+                'data' => [
+                    'id' => $disposition->id,
+                    'type' => 'disposition'
+                ],
+                'title' => '1 pekerjaan telah masuk.'
+            ];
+            if ($tembusan = $request->tembusan) {
+                $disposition->sections()->sync($tembusan);
+            }
 
-            //Send Notification to Firebase
-            // if ($firebaseData['token']) {
-            //     $notification = new Notification;
-            //     $notification->toSingleDevice($firebaseData, null, null);
-            //     if ($firebaseData['token']) {
-            //         NotificationController::store($disposition, $firebaseData['user_id']);
-            //     }
-            // }
+            // Send Notification to Firebase
+            if ($firebaseData['token']) {
+                $notification = new Notification;
+                $this->firebaseResponse = $notification->toSingleDevice($firebaseData, null, null);
+                if ($firebaseData['token']) {
+                    NotificationController::store($disposition, $firebaseData['user_id']);
+                }
+            }
 
             $response = [
                 'message' => 'Stored Successfully',
+                'firebase_response' => $this->firebaseResponse
             ];
             $status = 201;
         }

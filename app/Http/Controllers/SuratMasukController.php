@@ -328,27 +328,28 @@ class SuratMasukController extends Controller
                 'tipe_surat' => 'masuk'
             ]);
 
-            // $userReceiveNotif = User::where('roles_id', 2)->where('sub_bagian_id', 1)->first();
-            // //Set FirebaseData for Send Notification
-            // $firebaseData = [
-            //     'token' => $userReceiveNotif->device_token ?? null,
-            //     'user_id' => $userReceiveNotif->id,
-            //     'body' => 'Terdapat surat masuk dengan nomor surat :' . $message->no_surat,
-            //     'data' => [
-            //         'id' => $message->id,
-            //         'type' => 'surat_masuk'
-            //     ],
-            //     'title' => 'Surat masuk telah diterima'
-            // ];
+            $userReceiveNotif = User::where('roles_id', 4)->where('sub_bagian_id', 9)->first();
+            //Set FirebaseData for Send Notification
+            $firebaseData = [
+                'token' => $userReceiveNotif->device_token ?? null,
+                'user_id' => $userReceiveNotif->id,
+                'body' => 'Terdapat surat masuk dengan nomor surat :' . $message->no_surat,
+                'data' => [
+                    'id' => $message->id,
+                    'type' => 'surat_masuk'
+                ],
+                'title' => 'Surat masuk telah diterima'
+            ];
 
-            // $notification = new Notification;
-            // $notification->toSingleDevice($firebaseData, null, null);
+            $notification = new Notification;
+            $firebaseResponse = $notification->toSingleDevice($firebaseData, null, null);
 
-            // if ($firebaseData['token']) {
-            //     NotificationController::store($message, $firebaseData['user_id']);
-            // }
+            if ($firebaseData['token']) {
+                NotificationController::store($message, $firebaseData['user_id']);
+            }
             $response = [
-                'message' => 'stored successfully'
+                'message' => 'stored successfully',
+                'firebase_response' => $firebaseResponse
             ];
             $status = 201;
         }
